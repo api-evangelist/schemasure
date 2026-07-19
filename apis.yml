@@ -1,0 +1,57 @@
+name: SchemaSure
+description: >-
+  Structured data extraction API that converts unstructured text or HTML into JSON guaranteed to validate against a
+  caller-supplied JSON Schema, or returns a typed error at no charge. Access is gated by x402 pay-per-call micropayments
+  (USDC on Base), with no accounts or API keys.
+url: https://schemasure.apievangelist.com/apis.yml
+created: '2026-07-19'
+modified: '2026-07-19'
+specificationVersion: '0.21'
+tags:
+  - structured-data-extraction
+  - text-to-JSON
+  - JSON-Schema
+  - document-parsing
+  - data-cleaning
+  - LLM-tooling
+  - AI-agents
+  - x402-micropayments
+  - agent-native
+  - A2A
+  - MCP
+apis:
+  - name: SchemaSure Structured Extraction API
+    description: >-
+      REST API (OpenAPI 3.1) exposing POST /v2/extract (x402 V2 paid), legacy POST /extract, GET /health, and GET
+      /metrics. Converts text/HTML into schema-valid JSON. Includes llms.txt integration guide and an A2A agent card.
+    humanURL: https://schemasure.com
+    baseURL: https://schemasure.com
+    tags:
+      - structured-data-extraction
+      - text-to-JSON
+      - JSON-Schema
+      - document-parsing
+      - data-cleaning
+      - LLM-tooling
+      - AI-agents
+      - x402-micropayments
+      - agent-native
+      - A2A
+      - MCP
+    properties:
+      - type: OpenAPI
+        url: https://schemasure.com/openapi.json
+      - type: LLMSTxt
+        url: https://schemasure.com/llms.txt
+      - type: Documentation
+        url: https://schemasure.com/llms.txt
+      - type: AgentSkills
+        url: https://schemasure.com/.well-known/agent.json
+maintainers:
+  - FN: SchemaSure Support
+    url: mailto:support@schemasure.com
+generated:
+  by: apis.io/add
+  model: claude-opus-4-8
+  confidence: 95
+  at: '2026-07-19T22:23:17.395Z'
