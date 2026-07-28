@@ -1,0 +1,159 @@
+{
+  "protocolVersion": "0.2.0",
+  "name": "SchemaSure",
+  "description": "Pay-per-call API that extracts strict, JSON-Schema-valid typed JSON from unstructured text or HTML. Output is guaranteed to validate against the caller-supplied JSON Schema (Ajv, draft 2020-12) or the request returns a typed error and is not charged (charge-only-on-success). The primary production API uses x402 V2 with USDC on Base mainnet; a legacy V1 endpoint provides limited free evaluation calls. No signup, API keys, or account dashboard \u2014 built for autonomous AI agents.",
+  "url": "https://schemasure.com/v2/extract",
+  "preferredTransport": "JSONRPC",
+  "provider": {
+    "organization": "SchemaSure",
+    "url": "https://schemasure.com"
+  },
+  "version": "0.1.1",
+  "documentationUrl": "https://schemasure.com/llms.txt",
+  "iconUrl": "https://schemasure.com/icon.svg",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json"
+  ],
+  "skills": [
+    {
+      "id": "extract_to_schema",
+      "name": "Extract to JSON Schema",
+      "description": "Turn any unstructured text or HTML into JSON that is guaranteed to validate against a caller-supplied JSON Schema, or return a typed error with no charge. General-purpose: your schema defines the domain (invoices, receipts, resumes, product pages, logs, etc.) \u2014 there is no per-document-type specialization. For best accuracy, add a `description` to ambiguous fields (e.g. \"tax rate as a decimal such as 0.0725\") and make optional fields nullable so absent values return null instead of a guess. Accepts text/HTML input (inputType text|html|auto); OCR noise, number/date formats, and detail lines are normalized automatically. Benchmarked 100% schema-valid with ~0.99 field F1 and zero hallucinations across a 10-doc-type corpus (11 items, incl. an adversarial prompt-injection tier), p50 latency ~1.5s. Evidence: /.well-known/benchmarks.json. Live operational counters are at /metrics.",
+      "tags": [
+        "x402",
+        "structured-output",
+        "ai-agents",
+        "structured-data",
+        "json",
+        "extraction",
+        "schema",
+        "json-schema",
+        "text-to-json",
+        "data-cleaning",
+        "parsing",
+        "llm",
+        "agents"
+      ],
+      "examples": [
+        "Extract invoice fields into {invoiceNumber, total, dueDate} as valid JSON.",
+        "Turn this resume text into a structured JSON object matching my schema.",
+        "Parse this HTML product page into {name, price, sku} JSON."
+      ],
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "schema"
+        ],
+        "properties": {
+          "input": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Raw unstructured content to extract from (plain text or HTML)."
+          },
+          "inputType": {
+            "type": "string",
+            "enum": [
+              "text",
+              "html",
+              "auto"
+            ],
+            "default": "auto",
+            "description": "How to interpret `input`: plain text, HTML, or auto-detect (default)."
+          },
+          "schema": {
+            "type": "object",
+            "description": "JSON Schema (draft 2020-12) that the returned `data` is guaranteed to satisfy."
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "maxRepairs": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Max validate->re-prompt repair iterations."
+              },
+              "strict": {
+                "type": "boolean",
+                "default": true,
+                "description": "Drop fields not present in the schema."
+              },
+              "deterministic": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable deterministic pre-extraction hints."
+              }
+            }
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "description": "Extracted value; guaranteed to validate against the request `schema`."
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "repairs",
+              "latencyMs",
+              "validated"
+            ],
+            "properties": {
+              "repairs": {
+                "type": "integer"
+              },
+              "latencyMs": {
+                "type": "integer"
+              },
+              "validated": {
+                "const": true
+              },
+              "deterministicFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "x-payment": {
+    "protocol": "x402",
+    "version": 2,
+    "primary": true,
+    "resource": "https://schemasure.com/v2/extract",
+    "network": "eip155:8453",
+    "asset": "USDC",
+    "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "priceUsd": 0.01,
+    "pricing": "$0.01/call, flat, failed calls free",
+    "chargeModel": "charge-only-on-success",
+    "alwaysPaid": true
+  },
+  "legacyEvaluation": {
+    "resource": "https://schemasure.com/extract",
+    "x402Version": 1,
+    "freeCallsPerClient": 3
+  }
+}

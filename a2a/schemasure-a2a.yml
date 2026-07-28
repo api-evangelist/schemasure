@@ -1,0 +1,36 @@
+generated: '2026-07-28'
+method: probed
+source: https://schemasure.com/.well-known/agent.json
+description: 'A2A Agent Card observed at /.well-known/agent.json on schemasure.com. Grade is measured
+  against the A2A 1.0.0 AgentCard object: ''conformant'' passes every structural check, ''near-conformant''
+  is correctly shaped but omits optional fields, ''flavored'' fails a hard check and is an agent card
+  in spirit rather than in schema. Provider-published by construction — served from the provider''s own
+  host; nothing here is derived or generated.'
+discovery:
+  path: /.well-known/agent.json
+  canonical: false
+  host: schemasure.com
+conformance:
+  spec: A2A 1.0.0
+  grade: conformant
+  protocol_version: 0.2.0
+  preferred_transport: JSONRPC
+  deviations: []
+card:
+  name: SchemaSure
+  description: Pay-per-call API that extracts strict, JSON-Schema-valid typed JSON from unstructured text
+    or HTML. Output is guaranteed to validate against the caller-supplied JSON Schema (Ajv, draft 2020-12)
+    or the request returns a typed error and is not charged (charge-only-on-success). The primary production
+    API uses x402 V2 with USDC on Base mainnet; a legacy V1 endpoint provides limited free evaluation
+    calls. No signup, API keys, or account dashboard — built for autonomous AI agents.
+  url: https://schemasure.com/v2/extract
+  version: 0.1.1
+  documentation_url: https://schemasure.com/llms.txt
+  skills: 1
+  file: schemasure-agent-card.json
+x-evidence:
+  fetched: '2026-07-28'
+  url: https://schemasure.com/.well-known/agent.json
+  http_status: 200
+  content_type: application/json
+  note: Verbatim body saved alongside this manifest. No field inferred.

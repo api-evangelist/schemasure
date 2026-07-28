@@ -55,3 +55,8 @@ generated:
   model: claude-opus-4-8
   confidence: 95
   at: '2026-07-19T22:23:17.395Z'
+common:
+- type: AgentCard
+  url: a2a/schemasure-a2a.yml
+  name: A2A Agent Card
+  description: Agent Card served at /.well-known/agent.json (conformant against A2A 1.0.0).
