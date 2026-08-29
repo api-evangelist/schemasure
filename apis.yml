@@ -4,6 +4,17 @@ description: >-
   caller-supplied JSON Schema, or returns a typed error at no charge. Access is gated by x402 pay-per-call micropayments
   (USDC on Base), with no accounts or API keys.
 url: https://raw.githubusercontent.com/api-evangelist/schemasure/refs/heads/main/apis.yml
+deliveryModel:
+  model: unknown
+  open_source: false
+  commercial: false
+  callable_host: false
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - none
+  generated: '2026-08-28'
+  method: derived
 created: '2026-07-19'
 modified: '2026-07-19'
 specificationVersion: '0.23'
