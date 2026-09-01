@@ -19,13 +19,13 @@ created: '2026-07-19'
 modified: '2026-07-19'
 specificationVersion: '0.23'
 tags:
-  - structured-data-extraction
+  - Structured Data Extraction
   - text-to-JSON
   - JSON-Schema
-  - document-parsing
-  - data-cleaning
-  - LLM-tooling
-  - AI-agents
+  - Document Parsing
+  - Data Cleaning
+  - LLM Tooling
+  - AI Agents
   - x402-micropayments
   - agent-native
   - A2A
@@ -50,13 +50,13 @@ apis:
     humanURL: https://schemasure.com
     baseURL: https://schemasure.com
     tags:
-      - structured-data-extraction
+      - Structured Data Extraction
       - text-to-JSON
       - JSON-Schema
-      - document-parsing
-      - data-cleaning
-      - LLM-tooling
-      - AI-agents
+      - Document Parsing
+      - Data Cleaning
+      - LLM Tooling
+      - AI Agents
       - x402-micropayments
       - agent-native
       - A2A
