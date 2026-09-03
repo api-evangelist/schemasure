@@ -1,0 +1,26 @@
+generated: '2026-09-03'
+method: searched
+source: https://registry.npmjs.org/@noamjose%2Fschemasure
+note: >-
+  One first-party package: the SchemaSure MCP client on npm, named in the provider's own llms.txt
+  ("Published package: https://www.npmjs.com/package/@noamjose/schemasure"). Registry metadata lists
+  repository github.com/noamjose/schemasure (directory packages/mcp-server), which returns 404
+  anonymously — the source repo is private. No packages found on PyPI, RubyGems, crates.io, NuGet,
+  Maven Central, pkg.go.dev, or Packagist, consistent with a Node-only MCP client distribution.
+packages:
+- name: '@noamjose/schemasure'
+  registry: npm
+  url: https://www.npmjs.com/package/@noamjose/schemasure
+  language: JavaScript
+  kind: mcp-client
+  official: true
+  version: 0.3.0
+  published: '2026-07-31'
+  description: 'SchemaSure MCP client: turn text/HTML or document images into guaranteed schema-valid JSON via x402 V2.'
+  install: npx -y @noamjose/schemasure
+  source_repo: https://github.com/noamjose/schemasure
+  source_repo_status: 404 (private)
+  note: >-
+    Latest release 2026-07-31 (v0.3.0) tracks the API surface — it shipped alongside the
+    /v2/extract-image launch (image benchmarks generated 2026-07-31), so the SDK is current
+    with the API it wraps, not abandoned.

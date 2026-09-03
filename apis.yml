@@ -1,9 +1,8 @@
 name: SchemaSure
-description: >-
-  Structured data extraction API that converts unstructured text or HTML into JSON guaranteed to validate against a
-  caller-supplied JSON Schema, or returns a typed error at no charge. Access is gated by x402 pay-per-call micropayments
-  (USDC on Base), with no accounts or API keys.
-url: https://raw.githubusercontent.com/api-evangelist/schemasure/refs/heads/main/apis.yml
+description: Structured data extraction API that converts unstructured text or HTML into JSON guaranteed to validate
+  against a caller-supplied JSON Schema, or returns a typed error at no charge. Access is gated by x402 pay-per-call
+  micropayments (USDC on Base), with no accounts or API keys.
+url: https://schemasure.com/apis.json
 deliveryModel:
   model: unknown
   open_source: false
@@ -16,9 +15,42 @@ deliveryModel:
   generated: '2026-08-28'
   method: derived
 created: '2026-07-19'
-modified: '2026-07-19'
+modified: '2026-09-03'
 specificationVersion: '0.23'
 tags:
+- Structured Data Extraction
+- text-to-JSON
+- JSON-Schema
+- Document Parsing
+- Data Cleaning
+- LLM Tooling
+- AI Agents
+- x402-micropayments
+- agent-native
+- A2A
+- MCP
+tags_raw:
+- structured-data-extraction
+- text-to-JSON
+- JSON-Schema
+- document-parsing
+- data-cleaning
+- LLM-tooling
+- AI-agents
+- x402-micropayments
+- agent-native
+- A2A
+- MCP
+apis:
+- name: SchemaSure Structured Extraction API
+  description: REST API (OpenAPI 3.1) exposing POST /v2/extract for text/HTML and POST /v2/extract-image for document
+    images (both x402 V2 paid, charge-only-on-success), a deprecated legacy POST /extract with 3 free evaluation
+    calls per client, and GET /health. Converts unstructured content into JSON guaranteed to validate against a
+    caller-supplied JSON Schema (Ajv, draft 2020-12) or returns a typed error at no charge. Documented for agents
+    via llms.txt and a machine-readable well-known surface (x402 manifests, pricing, benchmarks, data-handling contract).
+  humanURL: https://schemasure.com
+  baseURL: https://schemasure.com
+  tags:
   - Structured Data Extraction
   - text-to-JSON
   - JSON-Schema
@@ -30,7 +62,7 @@ tags:
   - agent-native
   - A2A
   - MCP
-tags_raw:
+  tags_raw:
   - structured-data-extraction
   - text-to-JSON
   - JSON-Schema
@@ -42,56 +74,80 @@ tags_raw:
   - agent-native
   - A2A
   - MCP
-apis:
-  - name: SchemaSure Structured Extraction API
-    description: >-
-      REST API (OpenAPI 3.1) exposing POST /v2/extract (x402 V2 paid), legacy POST /extract, GET /health, and GET
-      /metrics. Converts text/HTML into schema-valid JSON. Includes llms.txt integration guide and an A2A agent card.
-    humanURL: https://schemasure.com
-    baseURL: https://schemasure.com
-    tags:
-      - Structured Data Extraction
-      - text-to-JSON
-      - JSON-Schema
-      - Document Parsing
-      - Data Cleaning
-      - LLM Tooling
-      - AI Agents
-      - x402-micropayments
-      - agent-native
-      - A2A
-      - MCP
-    tags_raw:
-      - structured-data-extraction
-      - text-to-JSON
-      - JSON-Schema
-      - document-parsing
-      - data-cleaning
-      - LLM-tooling
-      - AI-agents
-      - x402-micropayments
-      - agent-native
-      - A2A
-      - MCP
-    properties:
-      - type: OpenAPI
-        url: https://schemasure.com/openapi.json
-      - type: LLMSTxt
-        url: https://schemasure.com/llms.txt
-      - type: Documentation
-        url: https://schemasure.com/llms.txt
-      - type: AgentSkills
-        url: https://schemasure.com/.well-known/agent.json
+  properties:
+  - type: OpenAPI
+    url: openapi/schemasure-openapi.json
+  - type: LLMsTxt
+    url: llms/schemasure-llms.txt
+  - type: Documentation
+    url: https://schemasure.com/llms.txt
+  - type: Overlay
+    url: overlays/schemasure-openapi-overlay.yaml
+  - type: ErrorCatalog
+    url: errors/schemasure-problem-types.yml
+  - type: ToolCrosswalk
+    url: mcp/schemasure-tool-crosswalk.yml
+  image: https://schemasure.com/icon.svg
 maintainers:
-  - FN: SchemaSure Support
-    url: mailto:support@schemasure.com
+- FN: SchemaSure Support
+  url: https://schemasure.com
+  email: support@schemasure.com
 generated:
   by: apis.io/add
   model: claude-opus-4-8
   confidence: 95
   at: '2026-07-19T22:23:17.395Z'
 common:
-- type: AgentCard
-  url: a2a/schemasure-a2a.yml
-  name: A2A Agent Card
-  description: Agent Card served at /.well-known/agent.json (conformant against A2A 1.0.0).
+- type: Website
+  url: https://schemasure.com
+- type: VulnerabilityDisclosure
+  url: security/schemasure-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/schemasure-domain-security.yml
+- type: WellKnown
+  url: well-known/schemasure-well-known.yml
+- type: SecurityTxt
+  url: well-known/schemasure-security.txt
+- type: Security
+  url: security/schemasure-vulnerability-disclosure.yml
+- type: Packages
+  url: packages/schemasure-packages.yml
+- type: SDKs
+  url: packages/schemasure-packages.yml
+- type: MCPServer
+  url: mcp/schemasure-mcp.yml
+  description: First-party MCP client, local-stdio only (npx -y @noamjose/schemasure); no hosted endpoint — /mcp
+    probed 404 on 2026-09-03.
+- type: Conformance
+  url: conformance/schemasure-conformance.yml
+- type: Lifecycle
+  url: lifecycle/schemasure-lifecycle.yml
+- type: Authentication
+  url: authentication/schemasure-authentication.yml
+- type: Sandbox
+  url: sandbox/schemasure-sandbox.yml
+- type: Conventions
+  url: conventions/schemasure-conventions.yml
+- type: DataModel
+  url: data-model/schemasure-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Plans
+  url: plans/schemasure-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/schemasure-rate-limits.yml
+- type: APIsJson
+  url: https://schemasure.com/apis.json
+  description: Provider-published APIs.json 0.18 portfolio discovery index (also saved at well-known/schemasure-apis-json.json).
+- type: Pricing
+  url: https://schemasure.com/.well-known/pricing.json
+- type: TermsOfService
+  url: https://schemasure.com/terms
+- type: PrivacyPolicy
+  url: https://schemasure.com/privacy
+image: https://schemasure.com/icon.svg
+x-enrichment:
+  date: '2026-09-03'
+  status: enriched
+  artifacts_added: 30
+  pass: local-v2

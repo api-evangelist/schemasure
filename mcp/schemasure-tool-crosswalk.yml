@@ -1,0 +1,38 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json + llms/schemasure-llms.txt (MCP tool names published by the provider)
+note: >-
+  The MCP tool names in the provider's llms.txt are identical to the OpenAPI operationIds, so the
+  binding is one-to-one and exact. The live MCP schema was not introspected (the server is
+  local-stdio only; no remote endpoint), so tool inputSchemas are inherited from the bound
+  OpenAPI requestBody schemas by name match.
+surfaces:
+  openapi: openapi/schemasure-openapi.json
+  mcp: local-stdio via npx -y @noamjose/schemasure (no remote endpoint; live introspection requires a local install)
+  graphql: none
+crosswalk:
+- tool: extract_to_schema
+  category: extraction
+  rest:
+  - extract_to_schema
+  binding: exact-name
+  confidence: high
+  note: POST /v2/extract — inherits ExtractRequest {input, inputType, schema, options}.
+- tool: extract_image_to_schema
+  category: extraction
+  rest:
+  - extract_image_to_schema
+  binding: exact-name
+  confidence: high
+  note: POST /v2/extract-image — inherits ImageExtractRequest {image{data,mimeType}, schema, options}.
+mcp_only: []
+rest_only:
+- operationId: extract_to_schema_v1
+  reason: Legacy V1 evaluation endpoint (deprecated in the spec); the MCP client targets V2 only.
+- operationId: health
+  reason: Liveness probe; not an agent tool.
+coverage:
+  tools: 2
+  mapped: 2
+  rest_operations: 4
+  rest_covered: 2

@@ -1,0 +1,20 @@
+generated: '2026-09-03'
+method: searched
+source: https://schemasure.com/llms.txt ("Try free on legacy V1")
+note: >-
+  No separate sandbox environment or test keys exist (there are no keys at all). The published
+  evaluation surface is the legacy V1 endpoint: 3 free calls per client on POST /extract, no
+  payment header needed. The V2 production endpoints are deliberately paid from the first call so
+  agents and marketplaces always receive a consistent 402 challenge. All values below are the
+  provider's published ones; nothing is invented.
+evaluation:
+  endpoint: POST https://schemasure.com/extract
+  free_calls_per_client: 3
+  payment_header_required: false
+  after_allowance: legacy x402 V1 X-PAYMENT flow
+  scope: text/HTML only — image extraction has intentionally no free or V1 route
+test_credentials: none (keyless x402 model; paid calls require a caller-owned Base wallet)
+test_clocks: none
+fixtures: >-
+  llms.txt publishes canonical example request bodies for both V2 endpoints (invoice text example
+  and base64 image example) that can be replayed verbatim.

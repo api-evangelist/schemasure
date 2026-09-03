@@ -1,0 +1,43 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json + well-known manifests + llms/schemasure-llms.txt
+note: >-
+  Conformance read from the provider's own machine-readable surface. The x402 conformance is
+  contract-declared, not prose: three payment manifests are served under /.well-known and the
+  OpenAPI documents the 402 challenge/PAYMENT-SIGNATURE flow per operation. Error bodies use a
+  stable vendor envelope, not RFC 9457 problem+json.
+standards:
+- id: x402
+  conforms: true
+  version: 2
+  evidence: >-
+    /.well-known/x402 and /.well-known/x402-image declare x402Version 2 manifests (scheme exact,
+    network eip155:8453, USDC asset 0x8335...2913) with Bazaar extension; /.well-known/x402-v1
+    declares the legacy V1 manifest; OpenAPI 402 responses carry the PAYMENT-REQUIRED header and
+    200s carry PAYMENT-RESPONSE. This is the domain standard for agent-payable APIs, declared in
+    the contract itself.
+  domain_standard: true
+- id: json-schema-2020-12
+  conforms: true
+  evidence: >-
+    The core product contract: caller-supplied schemas are validated with Ajv against JSON Schema
+    draft 2020-12 (stated in openapi.json info.description and llms.txt Guarantees), and the
+    request/response schemas in the OpenAPI are 2020-12 JSON Schema.
+- id: apis-json
+  conforms: true
+  evidence: /apis.json serves an APIs.json specificationVersion 0.18 portfolio discovery index (saved at well-known/schemasure-apis-json.json).
+- id: security-txt-rfc9116
+  conforms: true
+  evidence: /.well-known/security.txt with Contact, Expires, Canonical, Policy, Preferred-Languages (saved at well-known/schemasure-security.txt).
+- id: rfc9457
+  conforms: false
+  evidence: Errors are a vendor envelope {"error":{"code","message","details?"}} with content type application/json, not application/problem+json.
+- id: oauth2
+  conforms: false
+  evidence: No securitySchemes in the OpenAPI and no OAuth discovery documents (openid-configuration and oauth-authorization-server both 404); access is keyless x402 pay-per-call.
+- id: idempotency
+  conforms: false
+  evidence: 'llms.txt states plainly: "payment idempotency is not yet offered" — no Idempotency-Key mechanism exists.'
+- id: pagination
+  conforms: false
+  evidence: Not applicable in practice — single-shot RPC-style extraction calls; no collection endpoints.

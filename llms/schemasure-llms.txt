@@ -1,0 +1,118 @@
+# SchemaSure
+
+> Turn messy text, HTML, or document images into guaranteed schema-valid JSON, or pay nothing.
+
+Pay-per-call APIs that extract strict, JSON-Schema-valid typed JSON from unstructured text, HTML, or document images. Output is guaranteed to validate against the caller-supplied JSON Schema (Ajv, draft 2020-12) or the request returns a typed error and is not charged (charge-only-on-success). Both production services use x402 V2 with USDC on Base mainnet; the image service is always paid and has no V1 or free route. A legacy V1 text endpoint provides limited free evaluation calls. No signup, API keys, or account dashboard — built for autonomous AI agents.
+
+## Other APIs in this portfolio
+If your task is not schema extraction, one of these is probably the right call. Same payment rail
+(x402 V2, USDC on Base mainnet), same charge-only-on-success policy, no account or API key.
+- ChronoSure (Business time) — use when you must resolve a local time, a DST ambiguity, a business-day offset, or a public holiday for a timezone. POST https://chrono.schemasure.com/v1/business-time, $0.01 list. Brief: https://chrono.schemasure.com/llms.txt
+- SQLPermit (SQL guard) — use when you are about to execute a PostgreSQL statement and need it checked against a policy first. POST https://sqlpermit.schemasure.com/v1/guard/sql, $0.01 list. Brief: https://sqlpermit.schemasure.com/llms.txt
+- TxGuard (Transaction preflight) — use when you are about to sign a Base transaction or an x402 payment authorization and need to know what it actually does. POST https://txguard.schemasure.com/v1/tx/preflight, $0.01 list. Brief: https://txguard.schemasure.com/llms.txt
+- SafeFetch (Safe fetch) — use when you must read an untrusted web page and want the prose without the instructions hidden inside it. POST https://safefetch.schemasure.com/v1/fetch, $0.01 list. Brief: https://safefetch.schemasure.com/llms.txt
+- Portfolio index (machine-readable, all services): https://schemasure.com/apis.json
+- Prices above are list prices for orientation; the authoritative amount is always the live 402 challenge.
+
+## Pricing
+- Text/HTML: $0.01/call, flat, failed calls free.
+- Image: $0.03/image, flat, failed calls free; V2-only, with no free or V1 image calls.
+- Production APIs use x402 V2 with USDC on Base mainnet (eip155:8453). No signup or API keys.
+- Both V2 services are paid from the first call so marketplaces and autonomous agents receive a consistent 402 challenge.
+- Free evaluation applies only to text/HTML: first 3 calls per client on legacy V1 /extract.
+
+## Capabilities
+- Tool: extract_to_schema(input, schema)
+- Tool: extract_image_to_schema(image, schema), where image is {data, mimeType}
+- One outcome: give text/HTML or a document image + a JSON Schema, get back JSON that is guaranteed to validate — or a typed error and no charge.
+- General-purpose: YOUR JSON Schema defines the domain, so the services handle invoices, receipts, resumes, forms, screenshots, product pages, logs, and other documents without per-type endpoints.
+
+## Endpoints
+- POST https://schemasure.com/v2/extract — text/HTML production API (x402 V2, always paid). Body: {"input": string, "schema": <JSON Schema>, "inputType"?: "text|html|auto", "options"?: {...}}
+- POST https://schemasure.com/v2/extract-image — image production API (x402 V2, always paid, no V1/free route). Body: {"image":{"data":<base64>,"mimeType":"image/png|image/jpeg|image/webp"},"schema":<JSON Schema>,"options"?:{...}}
+- POST https://schemasure.com/extract — LEGACY V1 evaluation API with 3 limited free calls per client.
+- GET  https://schemasure.com/health   — liveness.
+- GET  https://schemasure.com/openapi.json — OpenAPI 3.1 spec.
+- GET  https://schemasure.com/.well-known/x402 — canonical V2 payment + Bazaar manifest.
+- GET  https://schemasure.com/.well-known/x402-image — image V2 payment + Bazaar manifest.
+- GET  https://schemasure.com/.well-known/x402-v1 — legacy V1 manifest.
+- GET  https://schemasure.com/.well-known/pricing.json — machine-readable pricing (one-line quote).
+- GET  https://schemasure.com/.well-known/benchmarks.json — text/HTML benchmark evidence.
+- GET  https://schemasure.com/.well-known/image-benchmarks.json — paid document-image benchmark evidence and limitations.
+- GET  https://schemasure.com/apis.json — APIs.json discovery index.
+- GET  https://schemasure.com/.well-known/security.txt — security contact and disclosure policy.
+- GET  https://schemasure.com/.well-known/data-handling.json — machine-readable zero-retention and operational-data contract.
+- GET  https://schemasure.com/metrics  — ephemeral, per-process reliability snapshot; resets on deploy.
+
+## How to call V2
+1. POST /v2/extract for text/HTML, or /v2/extract-image for base64 image bytes, with your JSON Schema.
+2. The unsigned request returns HTTP 402. Decode the `PAYMENT-REQUIRED` header and validate its live price, network, asset, payTo, and resource.
+3. Sign those terms with an x402 V2-compatible wallet/client and retry the identical request with `PAYMENT-SIGNATURE`.
+4. On HTTP 200, decode `PAYMENT-RESPONSE` for the settlement receipt. The `data` field validates against your schema; `meta` reports repairs and latency.
+5. Handler errors are not settled. Do not hardcode payment terms: trust and validate the live challenge.
+
+## Error handling and retries
+- 400 BAD_REQUEST, INVALID_SCHEMA, INPUT_TOO_LARGE, or UNSUPPORTED_INPUT_TYPE: fix the request; do not retry unchanged.
+- 402 PAYMENT_REQUIRED: sign the live challenge and retry the identical body. PAYMENT_INVALID: obtain a fresh challenge or correct the authorization.
+- 413 BAD_REQUEST: the encoded HTTP request body is too large; reduce it before retrying.
+- 422 EXTRACTION_FAILED, VALIDATION_FAILED, or ABSTAINED: change the input/schema or route to a fallback; the call is not settled.
+- 429 RATE_LIMITED: wait for the HTTP Retry-After duration, then retry.
+- 502 UPSTREAM_LLM_ERROR or PAYMENT_UPSTREAM, and 504 TIMEOUT: no settlement; retry with bounded exponential backoff.
+- 500 INTERNAL: no settlement; retry once with backoff, then report the X-Request-ID to support.
+- Every error body is {"error":{"code":string,"message":string,"details"?:any}}. Never retry a paid request blindly after losing its response; payment idempotency is not yet offered.
+
+## Image extraction contract
+- Image extraction is available only at /v2/extract-image; there is intentionally no image V1 or free endpoint.
+- Supply base64 bytes only (no data-URL prefix) and a matching `mimeType`: `image/png`, `image/jpeg`, or `image/webp`.
+- Maximum decoded image size: 8 MiB. The server validates base64, size, and file signature before model work.
+- Scans, invoices, receipts, forms, labels, screenshots, and photographed documents are supported. Clear, upright, high-resolution images produce the best results.
+
+## Try free on legacy V1
+1. POST /extract without a payment header for up to 3 evaluation calls per client.
+2. V1 uses the legacy `X-PAYMENT` / `X-PAYMENT-RESPONSE` flow after the free allowance.
+3. Move production and scaled agent traffic to /v2/extract; V1 is retained only for evaluation and compatibility.
+
+## How to get the best results
+- Describe your fields. A per-field `description` in your JSON Schema is the single biggest accuracy lever — it tells the engine exactly how to interpret a value (e.g. "tax rate as a decimal such as 0.0725", "date in ISO 8601 YYYY-MM-DD"). The engine follows these descriptions.
+- Constrain with the schema. Use `enum`, `type`, and `format` to pin outputs; the result is validated against your schema (draft 2020-12).
+- Model absence explicitly. For fields that may be missing, make them nullable (`"type": ["string","null"]`) or leave them out of `required` so you get `null` instead of a guess.
+- Normalization is automatic. Obvious OCR noise in numeric context (O->0, l->1), currency/number formats, and continuation/detail lines are handled without special instructions.
+- Keep `options.strict` true (default) to drop any field not present in your schema.
+
+## Input limits & supported types
+- Text endpoint inputType: `text`, `html`, or `auto` (default; recommended).
+- Image endpoint types: PNG, JPEG, or WebP as base64 bytes. PDFs remain unsupported.
+- Max input size: 256 KB per text/HTML call and 8 MiB decoded per image call.
+- Repair budget: up to 2 validate->re-prompt iterations (override with `options.maxRepairs`).
+- Document content is isolated from system instructions and treated as untrusted data. Prompt-injection defenses reduce risk but are not universally infallible.
+
+## Canonical V2 example request (POST /v2/extract)
+{"input":"Invoice #A-1042 — Acme Corp. Total due: $1,299.00 USD on 2026-08-01.","schema":{"type":"object","additionalProperties":false,"required":["invoiceNumber","total","currency","dueDate"],"properties":{"invoiceNumber":{"type":"string"},"total":{"type":"number"},"currency":{"type":"string","enum":["USD","EUR","GBP"]},"dueDate":{"type":"string","format":"date"}}}}
+
+## Image V2 example request (POST /v2/extract-image)
+{"image":{"data":"<base64-encoded PNG, JPEG, or WebP bytes>","mimeType":"image/png"},"schema":{"type":"object","additionalProperties":false,"required":["invoiceNumber","vendor","total"],"properties":{"invoiceNumber":{"type":"string","description":"Invoice identifier exactly as printed."},"vendor":{"type":"string"},"total":{"type":"number","description":"Final amount due as a number, without currency symbols."}}}}
+
+## Reliability
+- Text/HTML: Benchmarked 100% schema-valid with ~0.99 field F1 and zero hallucinations across a 10-doc-type text/HTML corpus (11 items, incl. an adversarial prompt-injection tier), p50 latency ~1.5s and p95 ~57.7s. Evidence: /.well-known/benchmarks.json.
+- Document images: Five real paid image calls passed schema validation and all 148 independently transcribed field anchors across a synthetic invoice/receipt launch corpus, with p50 latency ~2.6s and p95 ~4.1s. Small-corpus limitations are published at /.well-known/image-benchmarks.json.
+- Text benchmark JSON: https://schemasure.com/.well-known/benchmarks.json.
+- Image benchmark JSON: https://schemasure.com/.well-known/image-benchmarks.json.
+- Ephemeral per-process snapshot: validity 100.0% over 77 calls, p50 1073ms. It resets on deploy and is not an adoption counter. Full JSON: https://schemasure.com/metrics.
+
+## Guarantees
+- Output validates against your JSON Schema (Ajv, draft 2020-12) or you are not charged.
+- Text and readable image content are isolated from system instructions and treated as untrusted data; the text benchmark includes one adversarial injection case.
+- Typed, machine-readable JSON errors with stable codes; never HTML.
+
+## Data handling and trust
+- SchemaSure does not persist raw text, HTML, images, schemas, or extracted output in production.
+- Request content is transmitted over TLS to an inference subprocessor solely to fulfill the call. SchemaSure does not use customer content for training.
+- Operational logs and persistent commercial analytics exclude raw request content, schemas, wallet signatures, private keys, and extracted output.
+- Payment authorization is verified by the x402 facilitator and settlement is recorded on Base; private keys never reach SchemaSure.
+- Privacy: https://schemasure.com/privacy. Terms: https://schemasure.com/terms. Security contact: https://schemasure.com/.well-known/security.txt.
+- Machine-readable data-handling contract: https://schemasure.com/.well-known/data-handling.json.
+
+## MCP client
+- Published package: https://www.npmjs.com/package/@noamjose/schemasure
+- Run: npx -y @noamjose/schemasure
+- Set SCHEMASURE_PRIVATE_KEY to enable paid x402 V2 text and image calls. The dedicated Base wallet signs locally; the key is never sent to SchemaSure.

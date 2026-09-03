@@ -1,0 +1,14 @@
+generated: '2026-09-03'
+method: generated
+source: openapi/schemasure-openapi.json + llms/schemasure-llms.txt
+note: >-
+  No provider-published skills or AGENTS.md found (the /.well-known/agent.json card that carried
+  the extract_to_schema skill was withdrawn — 404 as of 2026-09-03). These two skills are
+  generated from the provider's own OpenAPI operationIds and llms.txt call flow.
+skills:
+- file: schemasure-extract-text-to-schema.md
+  name: schemasure-extract-text-to-schema
+  operations: [extract_to_schema]
+- file: schemasure-extract-image-to-schema.md
+  name: schemasure-extract-image-to-schema
+  operations: [extract_image_to_schema]

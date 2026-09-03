@@ -1,0 +1,31 @@
+generated: '2026-09-03'
+method: probed
+source: https://schemasure.com/.well-known/pricing.json (machine-readable; saved at well-known/schemasure-pricing.json)
+note: >-
+  Pricing is published as a machine-readable well-known document and mirrored in llms.txt and the
+  x402 manifests. No tiers, subscriptions, or seats — flat per-call metered pricing with
+  charge-only-on-success. The authoritative amount is always the live 402 challenge; these are
+  the published list prices.
+plan_count: 2
+billing_model: pay-per-call (x402 V2 micropayments, USDC on Base mainnet eip155:8453; no accounts or invoices)
+plans:
+- name: Text/HTML extraction
+  resource: https://schemasure.com/v2/extract
+  price: 0.01
+  currency: USD
+  unit: per successful extraction
+  charge_model: charge-only-on-success (failed calls free)
+  free_allowance: 3 free evaluation calls per client on legacy V1 /extract only
+- name: Document-image extraction
+  resource: https://schemasure.com/v2/extract-image
+  price: 0.03
+  currency: USD
+  unit: per successful image extraction
+  charge_model: charge-only-on-success (failed calls free)
+  free_allowance: none — V2-only, no free or V1 image calls
+payment:
+  protocol: x402
+  version: 2
+  network: eip155:8453 (Base mainnet)
+  asset: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+  max_timeout_seconds: 60

@@ -1,0 +1,35 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json components.schemas
+note: >-
+  A deliberately small model — four schemas, no persisted entities, no identifiers. The domain
+  model is the CALLER's: the `schema` field of each request is a caller-supplied JSON Schema
+  (draft 2020-12) that defines what comes back. There is no entity graph to draw because the
+  provider retains nothing (data-handling.json: retentionDays 0 for request content).
+entities:
+- name: ExtractRequest
+  kind: request
+  fields: [input, inputType, schema, options]
+  note: input is raw text/HTML (max 256 KB); schema is the caller's JSON Schema.
+- name: ImageExtractRequest
+  kind: request
+  fields: [image.data, image.mimeType, schema, options]
+  note: image.data is base64 PNG/JPEG/WebP (max 8 MiB decoded), no data-URL prefix.
+- name: ExtractSuccess
+  kind: response
+  fields: [data, meta.repairs, meta.latencyMs, meta.validated, meta.deterministicFields]
+  note: data validates against the request schema; meta.validated is const true.
+- name: Error
+  kind: response
+  fields: [error.code, error.message, error.details]
+  note: See errors/schemasure-problem-types.yml for the 15-code enum.
+relationships:
+- from: ExtractRequest
+  to: ExtractSuccess
+  type: produces
+  via: POST /v2/extract
+- from: ImageExtractRequest
+  to: ExtractSuccess
+  type: produces
+  via: POST /v2/extract-image
+id_conventions: none — stateless calls; the only correlation identifier is the X-Request-ID response header.

@@ -1,0 +1,52 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json + llms/schemasure-llms.txt
+note: >-
+  Cross-cutting runtime semantics for a deliberately small RPC-style surface: two paid extraction
+  calls, one deprecated evaluation call, one health probe. Cross-links: errors/schemasure-problem-types.yml,
+  lifecycle/schemasure-lifecycle.yml, authentication/schemasure-authentication.yml,
+  rate-limits/schemasure-rate-limits.yml.
+auth_style: x402 pay-per-call micropayments (USDC on Base mainnet); no accounts, keys, or OAuth. See authentication/.
+idempotency:
+  coverage: none
+  mechanism: none
+  note: >-
+    The provider says so itself: "Never retry a paid request blindly after losing its response;
+    payment idempotency is not yet offered" (llms.txt). No Idempotency-Key header exists. The
+    extraction calls are stateless compute — the only non-idempotent effect is the x402 payment
+    settlement, and that is exactly the part with no replay protection.
+pagination:
+  style: none
+  note: No collection endpoints; every call is a single-shot RPC.
+field_expansion: none
+request_tracing:
+  header: X-Request-ID
+  note: Returned on every response including errors; llms.txt says to report it to support on INTERNAL errors.
+versioning:
+  scheme: url-path (V1 -> V2); V1 marked deprecated in the spec. See lifecycle/.
+error_envelope:
+  shape: '{"error":{"code":string,"message":string,"details"?:any}}'
+  content_type: application/json (never HTML)
+  codes: stable machine-readable enum of 15 codes. See errors/.
+rate_limit_signaling:
+  status: 429 with code RATE_LIMITED
+  headers: [Retry-After]
+  note: No numeric limits published. See rate-limits/.
+payment_signaling:
+  challenge: 402 + PAYMENT-REQUIRED header (V2) / X-PAYMENT (V1)
+  receipt: PAYMENT-RESPONSE header on 200 (V2) / X-PAYMENT-RESPONSE (V1)
+  rule: Trust and validate the live challenge; never hardcode payment terms.
+dry_run_mode:
+  status: na
+  note: >-
+    No dry-run flag, but the failure mode is free by construction: charge-only-on-success means a
+    call that cannot satisfy the schema costs nothing, and V1 offers 3 free text/HTML evaluation
+    calls per client.
+reversibility:
+  status: na
+  note: >-
+    No write surface to reverse: extraction calls create or mutate no server-side resources
+    (data-handling.json declares zero retention of request content, retentionDays 0). The only
+    side effect is the x402 USDC settlement, which occurs only on success and has no published
+    refund/void operation — the protection is upstream of the call (failed calls are never
+    settled), not a reversal after it.

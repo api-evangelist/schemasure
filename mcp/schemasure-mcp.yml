@@ -1,0 +1,27 @@
+generated: '2026-09-03'
+method: searched
+source: https://schemasure.com/llms.txt
+note: >-
+  SchemaSure ships a first-party MCP client as an npm package, documented in its own llms.txt.
+  There is no hosted/remote MCP endpoint: POST https://schemasure.com/mcp with a tools/list
+  JSON-RPC body returned a JSON 404 ("Route not found") on 2026-09-03. The stdio server exposes
+  the two extraction tools and signs x402 V2 payments locally with a dedicated Base wallet
+  (SCHEMASURE_PRIVATE_KEY); the key never reaches SchemaSure.
+deployment:
+  mode: local-stdio
+  install: npx -y @noamjose/schemasure
+  package: https://www.npmjs.com/package/@noamjose/schemasure
+  auth: none
+  verified: probed
+  auth_note: >-
+    No API key or OAuth — access is x402 pay-per-call. Paid calls require the
+    SCHEMASURE_PRIVATE_KEY env var (a Base wallet private key the client signs with locally).
+tools:
+- name: extract_to_schema
+  description: Turn unstructured text or HTML into JSON guaranteed to validate against a caller-supplied JSON Schema (draft 2020-12), or a typed error at no charge.
+  rest_operation: extract_to_schema
+  source: llms.txt Capabilities section
+- name: extract_image_to_schema
+  description: Turn a document image ({data, mimeType} base64 PNG/JPEG/WebP) plus a JSON Schema into schema-valid JSON; always paid, $0.03/image.
+  rest_operation: extract_image_to_schema
+  source: llms.txt Capabilities section

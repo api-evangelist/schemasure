@@ -1,0 +1,20 @@
+generated: '2026-09-03'
+method: searched
+source: https://schemasure.com/llms.txt + openapi/schemasure-openapi.json 429 responses
+limit_count: 0
+note: >-
+  No numeric rate limits are published anywhere on the surface (llms.txt, OpenAPI, well-knowns).
+  What IS published is the runtime signal an agent needs: every operation documents a 429 response
+  with error code RATE_LIMITED and an HTTP Retry-After header, and the guidance "wait for the
+  HTTP Retry-After duration, then retry". An honest zero on documented limits, with the header
+  contract recorded.
+signaling:
+  status_code: 429
+  error_code: RATE_LIMITED
+  headers:
+  - Retry-After
+  guidance: wait for the Retry-After duration, then retry the identical request (unsettled — a rate-limited paid call is not charged)
+input_limits:
+  text_max_bytes: 262144
+  image_max_decoded_bytes: 8388608
+  repair_budget: up to 2 validate->re-prompt iterations (options.maxRepairs, max 5)

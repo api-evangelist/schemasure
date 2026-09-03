@@ -34,3 +34,18 @@ x-evidence:
   http_status: 200
   content_type: application/json
   note: Verbatim body saved alongside this manifest. No field inferred.
+x-reprobe:
+  fetched: '2026-09-03'
+  urls:
+  - url: https://schemasure.com/.well-known/agent.json
+    http_status: 404
+  - url: https://schemasure.com/.well-known/agent-card.json
+    http_status: 404
+  status: withdrawn
+  note: >-
+    The card recorded above is no longer served: both the legacy and canonical well-known paths
+    return a real JSON 404 ({"error":{"code":"BAD_REQUEST","message":"Route not found"}}) from the
+    provider's API, not an SPA shell. This manifest and the saved schemasure-agent-card.json are
+    retained as a historical record of a card that WAS provider-published on 2026-07-28; the
+    AgentCard pointer has been removed from apis.yml because the provider no longer publishes an
+    A2A surface. The llms.txt now documents an MCP client (npm @noamjose/schemasure) instead.

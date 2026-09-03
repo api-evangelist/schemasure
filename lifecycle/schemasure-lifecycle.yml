@@ -1,0 +1,32 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json + llms/schemasure-llms.txt
+note: >-
+  Versioning is URL-path based (V1 -> V2). The spec marks the V1 endpoint deprecated: true and the
+  docs state its role explicitly. No formal dated deprecation/sunset policy, no Sunset or
+  Deprecation headers, no status page — /metrics is an ephemeral per-process reliability snapshot
+  that resets on deploy and is explicitly "not an adoption counter", so it is not wired as a
+  StatusPage.
+versioning:
+  scheme: url-path
+  current: v2
+  versions:
+  - version: v2
+    status: current
+    endpoints: [/v2/extract, /v2/extract-image]
+    payment: x402 V2, always paid from the first call
+  - version: v1
+    status: deprecated
+    endpoints: [/extract]
+    payment: legacy x402 V1 (X-PAYMENT / X-PAYMENT-RESPONSE) after 3 free evaluation calls per client
+    note: '"Retained only for evaluation and compatibility" (llms.txt); deprecated: true in the OpenAPI. No sunset date published.'
+deprecated_operations:
+- operationId: extract_to_schema_v1
+  path: /extract
+  method: POST
+  replacement: extract_to_schema (POST /v2/extract)
+status_page: none
+sla: none published
+deprecation_policy: >-
+  No formal policy document; the only deprecation signal is the OpenAPI deprecated flag on V1 and
+  the llms.txt guidance to move production traffic to V2.

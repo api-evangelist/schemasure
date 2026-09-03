@@ -1,0 +1,58 @@
+generated: '2026-09-03'
+method: probed
+source: live HTTPS probes of schemasure.com (registrable domain; www.schemasure.com returns 526 invalid-origin-SSL and serves nothing)
+note: >-
+  SchemaSure publishes an unusually rich well-known surface: security.txt, three x402 payment
+  manifests (V2 text, V2 image, legacy V1), machine-readable pricing, two benchmark evidence
+  documents, and a machine-readable data-handling contract. It also serves an APIs.json discovery
+  index at the root (/apis.json) covering its whole service portfolio. The A2A agent card
+  previously served at /.well-known/agent.json (probed 200 on 2026-07-28) now returns a real
+  JSON 404 ("Route not found") on both the legacy and canonical paths — the card has been
+  withdrawn. OAuth/OIDC discovery documents are absent, consistent with the keyless x402
+  payment model.
+hosts:
+- host: schemasure.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: schemasure-security.txt
+  - path: /.well-known/x402
+    status: 200
+    file: schemasure-x402.json
+  - path: /.well-known/x402-image
+    status: 200
+    file: schemasure-x402-image.json
+  - path: /.well-known/x402-v1
+    status: 200
+    file: schemasure-x402-v1.json
+  - path: /.well-known/pricing.json
+    status: 200
+    file: schemasure-pricing.json
+  - path: /.well-known/benchmarks.json
+    status: 200
+    file: schemasure-benchmarks.json
+  - path: /.well-known/image-benchmarks.json
+    status: 200
+    file: schemasure-image-benchmarks.json
+  - path: /.well-known/data-handling.json
+    status: 200
+    file: schemasure-data-handling.json
+  - path: /apis.json
+    status: 200
+    file: schemasure-apis-json.json
+    note: APIs.json 0.18 portfolio discovery index served at the host root, linked from llms.txt.
+  - path: /.well-known/agent.json
+    status: 404
+    note: Served an A2A agent card until at least 2026-07-28; now a JSON "Route not found" 404. Withdrawn.
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404

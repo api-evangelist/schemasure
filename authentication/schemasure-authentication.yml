@@ -1,0 +1,33 @@
+generated: '2026-09-03'
+method: searched
+source: https://schemasure.com/llms.txt + well-known/schemasure-x402.json
+note: >-
+  derive-authentication.py produced no profile because the OpenAPI declares no securitySchemes —
+  correctly: SchemaSure has no authentication in the credential sense. There are no accounts, API
+  keys, or OAuth. Access control is x402 pay-per-call payment: an unsigned request returns 402
+  with a PAYMENT-REQUIRED challenge; the caller signs the terms with an x402 V2-compatible wallet
+  (USDC on Base mainnet, eip155:8453) and retries with PAYMENT-SIGNATURE. Identity is the payer
+  wallet address. OAuth discovery documents 404 (recorded in well-known/schemasure-well-known.yml).
+schemes:
+- name: x402-payment
+  type: x402
+  version: 2
+  in: header
+  request_header: PAYMENT-SIGNATURE
+  challenge_header: PAYMENT-REQUIRED
+  receipt_header: PAYMENT-RESPONSE
+  network: eip155:8453 (Base mainnet)
+  asset: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+  applies_to: [/v2/extract, /v2/extract-image]
+  note: Charge-only-on-success; failed calls are not settled. Do not hardcode payment terms — validate the live challenge.
+- name: x402-payment-v1
+  type: x402
+  version: 1
+  in: header
+  request_header: X-PAYMENT
+  receipt_header: X-PAYMENT-RESPONSE
+  applies_to: [/extract]
+  note: Legacy flow after the 3 free evaluation calls per client.
+api_keys: none
+oauth: none
+accounts: none

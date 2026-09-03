@@ -1,0 +1,8 @@
+# Security contact for SchemaSure (https://schemasure.com).
+# We welcome coordinated disclosure. Please do not include exploit payloads in public issues.
+Contact: https://github.com/noamjose/schemasure/security/advisories/new
+Contact: mailto:security@schemasure.com
+Expires: 2027-09-03T20:30:48.149Z
+Preferred-Languages: en
+Canonical: https://schemasure.com/.well-known/security.txt
+Policy: https://github.com/noamjose/schemasure/security/policy

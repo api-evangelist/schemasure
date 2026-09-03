@@ -1,0 +1,88 @@
+generated: '2026-09-03'
+method: derived
+source: openapi/schemasure-openapi.json Error schema enum + llms/schemasure-llms.txt "Error handling and retries"
+format: vendor-envelope
+envelope: '{"error":{"code":string,"message":string,"details"?:any}} — always JSON, never HTML; stable machine-readable codes'
+note: >-
+  Derived from the OpenAPI Error schema code enum, with retry semantics and settlement behavior
+  from the provider's llms.txt. Settlement matters here more than status codes: on the paid x402
+  endpoints, handler errors (4xx/5xx) are not settled — a failed call is a free call.
+problems:
+- code: BAD_REQUEST
+  status: 400
+  title: Malformed request
+  retry: fix the request; do not retry unchanged
+  charged: false
+- code: INVALID_SCHEMA
+  status: 400
+  title: Caller-supplied JSON Schema is invalid
+  retry: fix the schema; do not retry unchanged
+  charged: false
+- code: INPUT_TOO_LARGE
+  status: 400
+  title: Input exceeds the 256 KB text/HTML limit
+  retry: reduce input size
+  charged: false
+- code: UNSUPPORTED_INPUT_TYPE
+  status: 400
+  title: inputType or image mimeType not supported
+  retry: use text|html|auto, or PNG/JPEG/WebP for images
+  charged: false
+- code: FETCH_BLOCKED
+  status: 400
+  title: Referenced fetch blocked
+  retry: do not retry unchanged
+  charged: false
+- code: PAYMENT_REQUIRED
+  status: 402
+  title: x402 payment required
+  retry: decode the PAYMENT-REQUIRED header, sign the live challenge, retry the identical body
+  charged: false
+- code: PAYMENT_INVALID
+  status: 402
+  title: Payment authorization rejected
+  retry: obtain a fresh challenge or correct the authorization
+  charged: false
+- code: EXTRACTION_FAILED
+  status: 422
+  title: Model could not extract to the schema
+  retry: change the input or schema, or route to a fallback
+  charged: false
+- code: VALIDATION_FAILED
+  status: 422
+  title: Output failed schema validation after the repair budget
+  retry: change the input or schema
+  charged: false
+- code: ABSTAINED
+  status: 422
+  title: Engine declined to answer rather than guess
+  retry: change the input or schema
+  charged: false
+- code: RATE_LIMITED
+  status: 429
+  title: Rate limited
+  retry: wait for the HTTP Retry-After duration, then retry
+  charged: false
+- code: UPSTREAM_LLM_ERROR
+  status: 502
+  title: Inference upstream failed
+  retry: bounded exponential backoff; not settled
+  charged: false
+- code: PAYMENT_UPSTREAM
+  status: 502
+  title: x402 facilitator/settlement upstream failed
+  retry: bounded exponential backoff; not settled
+  charged: false
+- code: TIMEOUT
+  status: 504
+  title: Extraction timed out
+  retry: bounded exponential backoff; not settled
+  charged: false
+- code: INTERNAL
+  status: 500
+  title: Internal error
+  retry: retry once with backoff, then report the X-Request-ID to support
+  charged: false
+caveat: >-
+  Also documented: a 413 maps to code BAD_REQUEST when the encoded HTTP body is too large. Never
+  retry a paid request blindly after losing its response — payment idempotency is not offered.

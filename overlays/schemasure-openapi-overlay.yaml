@@ -1,0 +1,28 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the SchemaSure OpenAPI
+  version: 1.0.0
+x-provenance:
+  generated: '2026-09-03'
+  method: generated
+  source: openapi/schemasure-openapi.json (verbatim provider spec, fetched from https://schemasure.com/openapi.json)
+extends: schemasure-openapi.json
+actions:
+- target: $.info
+  update:
+    x-apis-io-slug: schemasure
+    x-artifact-index: https://raw.githubusercontent.com/api-evangelist/schemasure/refs/heads/main/apis.yml
+- target: $.paths['/v2/extract'].post
+  update:
+    x-pricing: '$0.01 per successful call, charge-only-on-success (well-known/schemasure-pricing.json)'
+    x-payment-protocol: x402 v2, USDC on Base mainnet (eip155:8453)
+- target: $.paths['/v2/extract-image'].post
+  update:
+    x-pricing: '$0.03 per successful image, charge-only-on-success; no free or V1 route'
+    x-payment-protocol: x402 v2, USDC on Base mainnet (eip155:8453)
+- target: $.paths['/extract'].post
+  update:
+    x-lifecycle: deprecated legacy V1 — 3 free evaluation calls per client, then x402 V1; move production traffic to /v2/extract
+- target: $.components.schemas.Error
+  update:
+    x-error-catalog: errors/schemasure-problem-types.yml
