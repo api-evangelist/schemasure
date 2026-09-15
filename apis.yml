@@ -145,6 +145,8 @@ common:
   url: https://schemasure.com/terms
 - type: PrivacyPolicy
   url: https://schemasure.com/privacy
+- type: Support
+  url: mailto:support@schemasure.com
 image: https://schemasure.com/icon.svg
 x-enrichment:
   date: '2026-09-03'
