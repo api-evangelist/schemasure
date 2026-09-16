@@ -42,52 +42,80 @@ tags_raw:
 - A2A
 - MCP
 apis:
-- name: SchemaSure Structured Extraction API
-  description: REST API (OpenAPI 3.1) exposing POST /v2/extract for text/HTML and POST /v2/extract-image for document
-    images (both x402 V2 paid, charge-only-on-success), a deprecated legacy POST /extract with 3 free evaluation
-    calls per client, and GET /health. Converts unstructured content into JSON guaranteed to validate against a
-    caller-supplied JSON Schema (Ajv, draft 2020-12) or returns a typed error at no charge. Documented for agents
-    via llms.txt and a machine-readable well-known surface (x402 manifests, pricing, benchmarks, data-handling contract).
+- aid: schemasure:schemasure-health-api
+  name: SchemaSure Health API
+  description: The Health API from SchemaSure — 1 operation(s) for health.
   humanURL: https://schemasure.com
   baseURL: https://schemasure.com
   tags:
-  - Structured Data Extraction
-  - text-to-JSON
-  - JSON-Schema
-  - Document Parsing
-  - Data Cleaning
-  - LLM Tooling
-  - AI Agents
-  - x402-micropayments
-  - agent-native
-  - A2A
-  - MCP
-  tags_raw:
-  - structured-data-extraction
-  - text-to-JSON
-  - JSON-Schema
-  - document-parsing
-  - data-cleaning
-  - LLM-tooling
-  - AI-agents
-  - x402-micropayments
-  - agent-native
-  - A2A
-  - MCP
+  - Health
   properties:
   - type: OpenAPI
-    url: openapi/schemasure-openapi.json
+    url: openapi/schemasure-health-api-openapi.yml
   - type: LLMsTxt
     url: llms/schemasure-llms.txt
   - type: Documentation
     url: https://schemasure.com/llms.txt
-  - type: Overlay
-    url: overlays/schemasure-openapi-overlay.yaml
   - type: ErrorCatalog
     url: errors/schemasure-problem-types.yml
   - type: ToolCrosswalk
     url: mcp/schemasure-tool-crosswalk.yml
-  image: https://schemasure.com/icon.svg
+- aid: schemasure:schemasure-image-extraction-x402-v2-api
+  name: SchemaSure Image extraction · x402 V2 API
+  description: >-
+    The Image extraction · x402 V2 API from SchemaSure — 1 operation(s) for image extraction · x402 v2.
+  humanURL: https://schemasure.com
+  baseURL: https://schemasure.com
+  tags:
+  - Image extraction · x402 V2
+  properties:
+  - type: OpenAPI
+    url: openapi/schemasure-image-extraction-x402-v2-api-openapi.yml
+  - type: LLMsTxt
+    url: llms/schemasure-llms.txt
+  - type: Documentation
+    url: https://schemasure.com/llms.txt
+  - type: ErrorCatalog
+    url: errors/schemasure-problem-types.yml
+  - type: ToolCrosswalk
+    url: mcp/schemasure-tool-crosswalk.yml
+- aid: schemasure:schemasure-legacy-v1-evaluation-api-api
+  name: SchemaSure Legacy V1 evaluation API
+  description: >-
+    The Legacy V1 evaluation API API from SchemaSure — 1 operation(s) for legacy v1 evaluation api.
+  humanURL: https://schemasure.com
+  baseURL: https://schemasure.com
+  tags:
+  - Legacy V1 evaluation API
+  properties:
+  - type: OpenAPI
+    url: openapi/schemasure-legacy-v1-evaluation-api-api-openapi.yml
+  - type: LLMsTxt
+    url: llms/schemasure-llms.txt
+  - type: Documentation
+    url: https://schemasure.com/llms.txt
+  - type: ErrorCatalog
+    url: errors/schemasure-problem-types.yml
+  - type: ToolCrosswalk
+    url: mcp/schemasure-tool-crosswalk.yml
+- aid: schemasure:schemasure-primary-x402-v2-api-api
+  name: SchemaSure Primary x402 V2 API
+  description: The Primary x402 V2 API API from SchemaSure — 1 operation(s) for primary x402 v2 api.
+  humanURL: https://schemasure.com
+  baseURL: https://schemasure.com
+  tags:
+  - Primary x402 V2 API
+  properties:
+  - type: OpenAPI
+    url: openapi/schemasure-primary-x402-v2-api-api-openapi.yml
+  - type: LLMsTxt
+    url: llms/schemasure-llms.txt
+  - type: Documentation
+    url: https://schemasure.com/llms.txt
+  - type: ErrorCatalog
+    url: errors/schemasure-problem-types.yml
+  - type: ToolCrosswalk
+    url: mcp/schemasure-tool-crosswalk.yml
 maintainers:
 - FN: SchemaSure Support
   url: https://schemasure.com
@@ -98,6 +126,8 @@ generated:
   confidence: 95
   at: '2026-07-19T22:23:17.395Z'
 common:
+- type: Overlay
+  url: overlays/schemasure-openapi-overlay.yaml
 - type: Website
   url: https://schemasure.com
 - type: VulnerabilityDisclosure
