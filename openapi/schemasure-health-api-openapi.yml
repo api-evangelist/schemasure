@@ -1,0 +1,45 @@
+openapi: 3.2.0
+info:
+  title: SchemaSure — structured extraction Health API
+  version: 0.2.0
+  summary: Turn messy text, HTML, or document images into guaranteed schema-valid JSON, or pay nothing. SchemaSure V2 is the primary production API.
+  description: Pay-per-call APIs that extract strict, JSON-Schema-valid typed JSON from unstructured text, HTML, or document images.
+  contact:
+    name: SchemaSure
+    url: https://schemasure.com
+servers:
+- url: https://schemasure.com
+tags:
+- name: Health
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Liveness/readiness probe
+      responses:
+        '200':
+          description: Service is up.
+      tags:
+      - Health
+externalDocs:
+  description: SchemaSure agent integration guide
+  url: https://schemasure.com/llms.txt
+x-payment:
+  protocol: x402
+  version: 2
+  primary: true
+  scheme: exact
+  network: eip155:8453
+  asset: USDC
+  assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+  priceUsd: 0.01
+  chargeModel: charge-only-on-success
+  alwaysPaid: true
+  resource: https://schemasure.com/v2/extract
+  resources:
+  - kind: text
+    resource: https://schemasure.com/v2/extract
+    priceUsd: 0.01
+  - kind: image
+    resource: https://schemasure.com/v2/extract-image
+    priceUsd: 0.03

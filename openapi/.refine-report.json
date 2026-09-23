@@ -1,0 +1,31 @@
+{
+  "provider": "schemasure",
+  "sources": [
+    "_original/schemasure-openapi.json"
+  ],
+  "outputs": [
+    "schemasure-health-api-openapi.yml",
+    "schemasure-image-extraction-x402-v2-api-openapi.yml",
+    "schemasure-legacy-v1-evaluation-api-api-openapi.yml",
+    "schemasure-primary-x402-v2-api-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "schemasure-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "schemasure-openapi.json: tagged paths GET /health -> Health",
+    "schemasure-openapi.json: declared missing tag: Health",
+    "schemasure-openapi.json: declared missing tag: Image extraction \u00b7 x402 V2",
+    "schemasure-openapi.json: declared missing tag: Legacy V1 evaluation API",
+    "schemasure-openapi.json: declared missing tag: Primary x402 V2 API",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "schemasure-health-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "schemasure-image-extraction-x402-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "schemasure-legacy-v1-evaluation-api-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "schemasure-primary-x402-v2-api-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

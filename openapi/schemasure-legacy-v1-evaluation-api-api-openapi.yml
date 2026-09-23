@@ -1,0 +1,300 @@
+openapi: 3.2.0
+info:
+  title: SchemaSure — structured extraction Legacy V1 evaluation API
+  version: 0.2.0
+  summary: Turn messy text, HTML, or document images into guaranteed schema-valid JSON, or pay nothing. SchemaSure V2 is the primary production API.
+  description: Pay-per-call APIs that extract strict, JSON-Schema-valid typed JSON from unstructured text, HTML, or document images.
+  contact:
+    name: SchemaSure
+    url: https://schemasure.com
+servers:
+- url: https://schemasure.com
+tags:
+- name: Legacy V1 evaluation API
+paths:
+  /extract:
+    post:
+      operationId: extract_to_schema_v1
+      tags:
+      - Legacy V1 evaluation API
+      deprecated: true
+      summary: Legacy V1 endpoint with a limited free evaluation allowance
+      description: Use this legacy endpoint only to try SchemaSure free (3 limited calls per client) or maintain an existing V1 integration. New production agents should use /v2/extract.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtractRequest'
+            example:
+              input: 'Invoice #A-1042 — Acme Corp. Total due: $1,299.00 USD on 2026-08-01.'
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - invoiceNumber
+                - total
+                - currency
+                - dueDate
+                properties:
+                  invoiceNumber:
+                    type: string
+                  total:
+                    type: number
+                  currency:
+                    type: string
+                    enum:
+                    - USD
+                    - EUR
+                    - GBP
+                  dueDate:
+                    type: string
+                    format: date
+      responses:
+        '200':
+          description: Schema-valid extraction. Paid responses include X-PAYMENT-RESPONSE.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+            X-PAYMENT-RESPONSE:
+              description: Base64-encoded x402 settlement receipt.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractSuccess'
+              example:
+                data:
+                  invoiceNumber: A-1042
+                  total: 1299
+                  currency: USD
+                  dueDate: '2026-08-01'
+                meta:
+                  repairs: 0
+                  latencyMs: 640
+                  validated: true
+        '400':
+          description: Bad request, unsupported input, invalid JSON Schema, or decoded input too large; fix before retrying. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '402':
+          description: Legacy V1 payment required or invalid. The response body contains the V1 accepts quote.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Encoded HTTP request body is too large; reduce it before retrying. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Could not produce schema-valid output; change the input/schema or use a fallback. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited. Wait for Retry-After before retrying. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+            Retry-After:
+              description: Seconds until a retry is allowed.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Unexpected server error. Retry once with backoff, then report X-Request-ID. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Inference or payment upstream unavailable. Retry with bounded exponential backoff. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Extraction timed out. Retry with bounded exponential backoff. Not settled.
+          headers:
+            X-Request-ID:
+              description: Correlation identifier to include when contacting support.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    ExtractSuccess:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          description: Extracted value; guaranteed to validate against the request `schema`.
+        meta:
+          type: object
+          required:
+          - repairs
+          - latencyMs
+          - validated
+          properties:
+            repairs:
+              type: integer
+            latencyMs:
+              type: integer
+            validated:
+              const: true
+            deterministicFields:
+              type: array
+              items:
+                type: string
+    ExtractRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - input
+      - schema
+      properties:
+        input:
+          type: string
+          minLength: 1
+          description: Raw unstructured content to extract from (plain text or HTML).
+        inputType:
+          type: string
+          enum:
+          - text
+          - html
+          - auto
+          default: auto
+          description: 'How to interpret `input`: plain text, HTML, or auto-detect (default).'
+        schema:
+          type: object
+          description: JSON Schema (draft 2020-12) that the returned `data` is guaranteed to satisfy.
+        options:
+          type: object
+          additionalProperties: false
+          properties:
+            maxRepairs:
+              type: integer
+              minimum: 0
+              maximum: 5
+              description: Max validate->re-prompt repair iterations.
+            strict:
+              type: boolean
+              default: true
+              description: Drop fields not present in the schema.
+            deterministic:
+              type: boolean
+              default: true
+              description: Enable deterministic pre-extraction hints.
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+              enum:
+              - BAD_REQUEST
+              - INVALID_SCHEMA
+              - INPUT_TOO_LARGE
+              - UNSUPPORTED_INPUT_TYPE
+              - FETCH_BLOCKED
+              - EXTRACTION_FAILED
+              - VALIDATION_FAILED
+              - ABSTAINED
+              - UPSTREAM_LLM_ERROR
+              - TIMEOUT
+              - RATE_LIMITED
+              - PAYMENT_REQUIRED
+              - PAYMENT_INVALID
+              - PAYMENT_UPSTREAM
+              - INTERNAL
+            message:
+              type: string
+            details: {}
+externalDocs:
+  description: SchemaSure agent integration guide
+  url: https://schemasure.com/llms.txt
+x-payment:
+  protocol: x402
+  version: 2
+  primary: true
+  scheme: exact
+  network: eip155:8453
+  asset: USDC
+  assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+  priceUsd: 0.01
+  chargeModel: charge-only-on-success
+  alwaysPaid: true
+  resource: https://schemasure.com/v2/extract
+  resources:
+  - kind: text
+    resource: https://schemasure.com/v2/extract
+    priceUsd: 0.01
+  - kind: image
+    resource: https://schemasure.com/v2/extract-image
+    priceUsd: 0.03
