@@ -20,13 +20,13 @@ specificationVersion: '0.23'
 tags:
 - Structured Data Extraction
 - text-to-JSON
-- JSON-Schema
+- JSON Schema
 - Document Parsing
 - Data Cleaning
 - LLM Tooling
 - AI Agents
 - x402-micropayments
-- agent-native
+- Agent-Native
 - A2A
 - MCP
 tags_raw:
@@ -46,7 +46,6 @@ apis:
   name: SchemaSure Health API
   description: The Health API from SchemaSure — 1 operation(s) for health.
   humanURL: https://schemasure.com
-  baseURL: https://schemasure.com
   tags:
   - Health
   properties:
@@ -65,7 +64,6 @@ apis:
   description: >-
     The Image extraction · x402 V2 API from SchemaSure — 1 operation(s) for image extraction · x402 v2.
   humanURL: https://schemasure.com
-  baseURL: https://schemasure.com
   tags:
   - Image extraction · x402 V2
   properties:
@@ -84,7 +82,6 @@ apis:
   description: >-
     The Legacy V1 evaluation API API from SchemaSure — 1 operation(s) for legacy v1 evaluation api.
   humanURL: https://schemasure.com
-  baseURL: https://schemasure.com
   tags:
   - Legacy V1 evaluation API
   properties:
@@ -102,7 +99,6 @@ apis:
   name: SchemaSure Primary x402 V2 API
   description: The Primary x402 V2 API API from SchemaSure — 1 operation(s) for primary x402 v2 api.
   humanURL: https://schemasure.com
-  baseURL: https://schemasure.com
   tags:
   - Primary x402 V2 API
   properties:

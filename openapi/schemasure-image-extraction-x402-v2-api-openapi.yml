@@ -191,6 +191,38 @@ paths:
         encoding: base64
 components:
   schemas:
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+              enum:
+              - BAD_REQUEST
+              - INVALID_SCHEMA
+              - INPUT_TOO_LARGE
+              - UNSUPPORTED_INPUT_TYPE
+              - FETCH_BLOCKED
+              - EXTRACTION_FAILED
+              - VALIDATION_FAILED
+              - ABSTAINED
+              - UPSTREAM_LLM_ERROR
+              - TIMEOUT
+              - RATE_LIMITED
+              - PAYMENT_REQUIRED
+              - PAYMENT_INVALID
+              - PAYMENT_UPSTREAM
+              - INTERNAL
+            message:
+              type: string
+            details: {}
     ExtractSuccess:
       type: object
       required:
@@ -258,38 +290,6 @@ components:
               type: boolean
               default: true
               description: Drop fields not present in the schema.
-    Error:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          properties:
-            code:
-              type: string
-              enum:
-              - BAD_REQUEST
-              - INVALID_SCHEMA
-              - INPUT_TOO_LARGE
-              - UNSUPPORTED_INPUT_TYPE
-              - FETCH_BLOCKED
-              - EXTRACTION_FAILED
-              - VALIDATION_FAILED
-              - ABSTAINED
-              - UPSTREAM_LLM_ERROR
-              - TIMEOUT
-              - RATE_LIMITED
-              - PAYMENT_REQUIRED
-              - PAYMENT_INVALID
-              - PAYMENT_UPSTREAM
-              - INTERNAL
-            message:
-              type: string
-            details: {}
 externalDocs:
   description: SchemaSure agent integration guide
   url: https://schemasure.com/llms.txt
