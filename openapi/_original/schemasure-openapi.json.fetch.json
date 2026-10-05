@@ -1,0 +1,12 @@
+{
+ "url": "https://schemasure.com/openapi.json",
+ "requested_url": "https://schemasure.com/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 19168,
+ "sha256": "8a0ff22057c32156a624be03bbf9733d06d50af4c1eb1a051a9b85d3e0bf8c33",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 1.0), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
