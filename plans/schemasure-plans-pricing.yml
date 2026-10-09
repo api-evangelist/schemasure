@@ -29,3 +29,24 @@ payment:
   network: eip155:8453 (Base mainnet)
   asset: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
   max_timeout_seconds: 60
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - subscription
+  units: []
+  plans:
+  - name: Text/HTML extraction
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods: []
+  - name: Document-image extraction
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods: []
