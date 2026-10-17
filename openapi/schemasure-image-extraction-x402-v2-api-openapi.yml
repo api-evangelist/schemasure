@@ -191,6 +191,31 @@ paths:
         encoding: base64
 components:
   schemas:
+    ExtractSuccess:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          description: Extracted value; guaranteed to validate against the request `schema`.
+        meta:
+          type: object
+          required:
+          - repairs
+          - latencyMs
+          - validated
+          properties:
+            repairs:
+              type: integer
+            latencyMs:
+              type: integer
+            validated:
+              const: true
+            deterministicFields:
+              type: array
+              items:
+                type: string
     Error:
       type: object
       required:
@@ -223,31 +248,6 @@ components:
             message:
               type: string
             details: {}
-    ExtractSuccess:
-      type: object
-      required:
-      - data
-      - meta
-      properties:
-        data:
-          description: Extracted value; guaranteed to validate against the request `schema`.
-        meta:
-          type: object
-          required:
-          - repairs
-          - latencyMs
-          - validated
-          properties:
-            repairs:
-              type: integer
-            latencyMs:
-              type: integer
-            validated:
-              const: true
-            deterministicFields:
-              type: array
-              items:
-                type: string
     ImageExtractRequest:
       type: object
       additionalProperties: false

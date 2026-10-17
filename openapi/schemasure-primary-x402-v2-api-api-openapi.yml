@@ -189,6 +189,31 @@ paths:
         network: eip155:8453
 components:
   schemas:
+    ExtractSuccess:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          description: Extracted value; guaranteed to validate against the request `schema`.
+        meta:
+          type: object
+          required:
+          - repairs
+          - latencyMs
+          - validated
+          properties:
+            repairs:
+              type: integer
+            latencyMs:
+              type: integer
+            validated:
+              const: true
+            deterministicFields:
+              type: array
+              items:
+                type: string
     Error:
       type: object
       required:
@@ -260,31 +285,6 @@ components:
               type: boolean
               default: true
               description: Enable deterministic pre-extraction hints.
-    ExtractSuccess:
-      type: object
-      required:
-      - data
-      - meta
-      properties:
-        data:
-          description: Extracted value; guaranteed to validate against the request `schema`.
-        meta:
-          type: object
-          required:
-          - repairs
-          - latencyMs
-          - validated
-          properties:
-            repairs:
-              type: integer
-            latencyMs:
-              type: integer
-            validated:
-              const: true
-            deterministicFields:
-              type: array
-              items:
-                type: string
 externalDocs:
   description: SchemaSure agent integration guide
   url: https://schemasure.com/llms.txt
