@@ -1,0 +1,80 @@
+edges:
+- partner_name: Coinbase CDP x402 Bazaar
+  partner: coinbase
+  partner_match: mirror
+  mirror_match: domain
+  type: marketplace
+  relationship: platform-app
+  direction: third-party
+  channel: partner-built
+  marketplace: own
+  evidence: https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources?limit=1000
+  mirror_of: coinbase/integrations/coinbase-integration-edges.yml
+  apps:
+  - SchemaSure
+  - ChronoSure
+  - TxGuard
+  - SQLPermit
+  - PayeeGuard
+  resources: 10
+  detected: '2026-10-21'
+  detected_by: sweep-x402-micropayments.py
+- partner_name: x402 protocol (live 402 probe)
+  partner: null
+  partner_match: register
+  type: register
+  channel: standard-directory
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://chrono.schemasure.com/v1/business-time
+  category: x402 pay-per-call conformance (observed)
+  contract_reference:
+    register: live x402 probe (unauthenticated request to a documented paid resource + negative control)
+    standard: x402
+    spec_file: null
+    role: x402-resource-server
+    matched_by: repo
+    certified_products:
+    - product: 'x402 resource server: payment challenge observed'
+      product_type: x402 resource server
+      lapsed: false
+      observed: '2026-10-21'
+      probe_url: https://chrono.schemasure.com/v1/business-time
+      probe_method: POST
+      evidence:
+      - header:payment-required
+      negative_control_status: 404
+    probes:
+    - url: https://chrono.schemasure.com/v1/business-time
+      method: POST
+      status: 402
+    signal_note: 'conformance OBSERVED, not certified by a body: 402 plus an x402 header or a complete accepts[]
+      body, and a negative control on the same host not challenged; one entry per product type'
+    detected_by: sweep-x402-micropayments.py
+    detected: '2026-10-21'
+  detected_by: sweep-x402-micropayments.py
+  first_seen: '2026-10-21'
+generated: '2026-10-21'
+method: searched
+source:
+- https://x402.org/members/
+- https://docs.x402.org/dev-tools/facilitators
+- https://docs.cdp.coinbase.com/x402/
+- https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources
+- https://www.x402.org/ecosystem
+- https://x402scan.com
+- https://agentic.market
+- https://pay.sh
+- https://app.ampersend.ai/discover
+- https://x402-list.com
+checked:
+- https://agentic.market
+- https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources
+- https://app.ampersend.ai/discover
+- https://docs.cdp.coinbase.com/x402/
+- https://docs.x402.org/dev-tools/facilitators
+- https://pay.sh
+- https://www.x402.org/ecosystem
+- https://x402-list.com
+- https://x402.org/members/
+- https://x402scan.com
