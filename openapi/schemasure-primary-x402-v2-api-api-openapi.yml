@@ -307,3 +307,9 @@ x-payment:
   - kind: image
     resource: https://schemasure.com/v2/extract-image
     priceUsd: 0.03
+x-provenance:
+  method: harvested
+  publisher: SchemaSure
+  source: https://schemasure.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
