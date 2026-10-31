@@ -1,4 +1,4 @@
-# schemasure
+# SchemaSure
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -65,3 +65,116 @@
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
 Structured data extraction API that converts unstructured text or HTML into JSON guaranteed to validate against a caller-supplied JSON Schema, or returns a typed error at no charge. Access is gated by x402 pay-per-call micropayments (USDC on Base), with no accounts or API keys.
+
+**Areas:** Structured Data Extraction · text-to-JSON · JSON Schema · Document Parsing · Data Cleaning · LLM Tooling · AI Agents · x402-micropayments · Agent-Native · A2A · MCP
+
+## SchemaSure on APIs.io
+
+Everything profiled for SchemaSure is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/schemasure/](https://apis.io/providers/schemasure/)** — or go straight to one of the APIs or properties below.
+
+### APIs (4)
+
+- [SchemaSure Health API](https://apis.io/apis/schemasure/schemasure-health-api/) — The Health API from SchemaSure — 1 operation(s) for health.
+- [SchemaSure Image extraction · x402 V2 API](https://apis.io/apis/schemasure/schemasure-image-extraction-x402-v2-api/) — The Image extraction · x402 V2 API from SchemaSure — 1 operation(s) for image extraction · x402 v2.
+- [SchemaSure Legacy V1 evaluation API](https://apis.io/apis/schemasure/schemasure-legacy-v1-evaluation-api-api/) — The Legacy V1 evaluation API API from SchemaSure — 1 operation(s) for legacy v1 evaluation api.
+- [SchemaSure Primary x402 V2 API](https://apis.io/apis/schemasure/schemasure-primary-x402-v2-api-api/) — The Primary x402 V2 API API from SchemaSure — 1 operation(s) for primary x402 v2 api.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [schemasure-mcp.yml](https://apis.io/servers/schemasure/schemasure-mcp-yml/)
+
+#### Overlays (1)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Schemasure Openapi Overlay](https://apis.io/overlays/schemasure/schemasure-openapi-overlay/)
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Schemasure Authentication](https://apis.io/security/schemasure/schemasure-authentication/)
+- [Schemasure Domain Security](https://apis.io/security/schemasure/schemasure-domain-security/)
+- [Schemasure Vulnerability Disclosure](https://apis.io/security/schemasure/schemasure-vulnerability-disclosure/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Schemasure Plans Pricing](https://apis.io/plans/schemasure/schemasure-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Schemasure Rate Limits](https://apis.io/rate-limits/schemasure/schemasure-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://schemasure.com)
+- [Pricing](https://schemasure.com/.well-known/pricing.json)
+- [Terms of service](https://schemasure.com/terms)
+- [Privacy policy](https://schemasure.com/privacy)
+
+## API Evangelist rating
+
+**Kin Score 41.3** — developing · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 70.0 |
+| Contract quality | 47.4 |
+| Contract governance | 4.5 |
+| Operational transparency | 10.5 |
+| Developer ergonomics | 42.3 |
+| Access clarity | 52.6 |
+
+**Agent readiness 41.4** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | verified |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | conformant |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 30.4** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/schemasure/](https://apis.io/providers/schemasure/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for SchemaSure: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/schemasure/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
