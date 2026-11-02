@@ -1,0 +1,61 @@
+# Pricing transcribed from the provider's own page — see provenance. Numbers are quoted, not derived.
+generated: '2026-10-28'
+method: searched
+source: https://schemasure.com/.well-known/pricing.json
+sources:
+- https://schemasure.com/.well-known/pricing.json
+provenance:
+  tool: engine/economics/harvest_pricing.py
+  run: 20261028T161713
+  grounding: every price_text was found verbatim in the fetched page text
+audience: developer-api
+pricing_basis: per-call
+delivery:
+  delivery: managed
+  method: page
+  read: '2026-10-28'
+published: true
+note: Machine-readable pricing.json; x402 v2 payment per call, charge-only-on-success. Legacy v1 endpoint
+  offers 3 free calls per client for evaluation.
+plan_count: 2
+currency: USD
+plans:
+- name: text-extraction
+  price_text: $0.02/call, flat, failed calls free
+  price: 0.02
+  currency: USD
+  period: per-use
+  unit: per successful extraction
+  included_quota: 'freeCalls: 0'
+- name: image-extraction
+  price_text: $0.06/image, flat, failed calls free
+  price: 0.06
+  currency: USD
+  period: per-use
+  unit: per image (base64 PNG/JPEG/WebP)
+  included_quota: 'freeCalls: 0'
+rate_limit_statements:
+- '"freeCallsPerClient":3'
+x-canonical:
+  generated: '2026-11-01'
+  vocabulary: engine/economics/plans-canonical.yml
+  models:
+  - subscription
+  units: []
+  plans:
+  - name: text-extraction
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods:
+    - other
+  - name: image-extraction
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods:
+    - other
