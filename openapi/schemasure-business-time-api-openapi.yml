@@ -1,0 +1,656 @@
+openapi: 3.2.0
+info:
+  title: ChronoSure Business Time API
+  version: 0.1.0
+  summary: Deterministic timezone, DST, business-day and public-holiday resolution for agents, paid per call.
+  description: 'ChronoSure turns a local wall-clock time into an exact UTC instant, and tells you plainly when that is impossible. Every local time is classified as unique, ambiguous or nonexistent against a pinned IANA tzdb release; business-day arithmetic skips weekends and public holidays from a provenance-tagged dataset; and working-hour overlap is intersected across zones. There is no model and no heuristic anywhere in it: the same input always returns the same answer, and every response names the datasets that produced it.'
+  contact:
+    email: support@schemasure.com
+  x-policy-version: 2026-08-03.1
+servers:
+- url: https://chrono.schemasure.com
+tags:
+- name: Business Time
+paths:
+  /v1/business-time:
+    post:
+      operationId: chronosure_v1_business_time
+      summary: Resolve a local time to a UTC instant with DST, holiday and working-hour context
+      description: Resolve a local time to an exact UTC instant with explicit DST ambiguity handling, business-day arithmetic, public-holiday status, and working-hour overlap across timezones. Detects ambiguous and nonexistent local times instead of silently shifting them. Declares its IANA tzdb release and per-jurisdiction holiday provenance.
+      x-payment-info:
+        offers:
+        - method: tempo
+          intent: charge
+          amount: '20000'
+          currency: '0x20C000000000000000000000b9537d11c60E8b50'
+          recipient: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+          methodDetails:
+            chainId: 4217
+            supportedModes:
+            - pull
+        x402Version: 2
+        scheme: exact
+        network: eip155:8453
+        asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+        amountAtomic: '20000'
+        priceUsd: 0.02
+        payTo: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+        policy: charge only on a successful, usable result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: https://json-schema.org/draft/2020-12/schema
+              title: BusinessTimeRequest
+              type: object
+              additionalProperties: false
+              required:
+              - timezone
+              oneOf:
+              - required:
+                - local_time
+              - required:
+                - instant
+              properties:
+                local_time:
+                  type: string
+                  pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$
+                  description: ISO local date and time with NO offset and no Z suffix. This is the field whose meaning can be ambiguous, which is the point of the endpoint.
+                  examples:
+                  - '2026-11-01T01:30:00'
+                instant:
+                  type: string
+                  description: An absolute ISO 8601 instant ending in Z or an explicit offset. Alternative to local_time; send exactly one of the two.
+                  examples:
+                  - '2026-11-01T05:30:00Z'
+                timezone:
+                  type: string
+                  minLength: 1
+                  description: IANA timezone identifier, resolved against tzdb 2026c.
+                  examples:
+                  - America/New_York
+                  - Pacific/Chatham
+                  - Antarctica/Troll
+                ambiguity_policy:
+                  type: string
+                  enum:
+                  - earlier
+                  - later
+                  - compatible
+                  - reject
+                  default: reject
+                  description: How to read a local time that occurs twice or not at all. Matches Temporal's disambiguation vocabulary. The default, reject, returns verdict "unknown" with both candidate instants rather than silently picking one.
+                add_business_days:
+                  type: integer
+                  minimum: -365
+                  maximum: 365
+                  description: Move this many working days from the resolved date, skipping the calendar's weekend days and its public holidays. Zero returns the date unchanged.
+                holiday_calendar:
+                  type: string
+                  enum:
+                  - AU-NSW
+                  - CA-BC
+                  - CA-ON
+                  - DE
+                  - FR
+                  - GB-ENG
+                  - GB-NIR
+                  - GB-SCT
+                  - IE
+                  - IL
+                  - IN
+                  - JP
+                  - NL
+                  - NZ
+                  - US
+                  - US-CA
+                  - US-NY
+                  description: Jurisdiction whose public holidays and weekend definition apply. An unlisted value is rejected with UNSUPPORTED; this service never falls back to an empty holiday list.
+                working_hours:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - start
+                  - end
+                  description: Local business hours, defaulting to 09:00-17:00. end < start means the window crosses midnight.
+                  properties:
+                    start:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                    end:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                compare_with:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                  description: Other IANA zones to report the same instant in, and to intersect working hours with.
+                  examples:
+                  - - Europe/London
+                    - Asia/Jerusalem
+            example:
+              local_time: '2026-11-01T01:30:00'
+              timezone: America/New_York
+              ambiguity_policy: reject
+      responses:
+        '200':
+          description: Successful result envelope
+          headers:
+            Payment-Receipt:
+              description: MPP Tempo settlement receipt
+              schema:
+                type: string
+            PAYMENT-RESPONSE:
+              description: x402 settlement receipt
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $schema: https://json-schema.org/draft/2020-12/schema
+                title: BusinessTimeEnvelope
+                type: object
+                required:
+                - ok
+                - verdict
+                - confidence
+                - risk_codes
+                - evidence
+                - result
+                - policy_version
+                - request_hash
+                - data_versions
+                - warnings
+                properties:
+                  ok:
+                    type: boolean
+                  verdict:
+                    type: string
+                    enum:
+                    - resolved
+                    - unknown
+                    description: 'unknown means the local time is ambiguous or nonexistent and ambiguity_policy is "reject". It is a real, charged answer: both candidate instants are in result.candidates.'
+                  confidence:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  risk_codes:
+                    type: array
+                    items:
+                      type: string
+                  evidence:
+                    type: array
+                    items:
+                      type: object
+                  policy_version:
+                    type: string
+                  request_hash:
+                    type: string
+                    pattern: ^sha256:[0-9a-f]{64}$
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  data_versions:
+                    type: object
+                    required:
+                    - tzdb
+                    - holidays
+                    - temporal_source
+                    properties:
+                      tzdb:
+                        type: string
+                      holidays:
+                        type: string
+                      temporal_source:
+                        type: string
+                        enum:
+                        - native
+                        - polyfill
+                  result:
+                    type: object
+                    required:
+                    - timezone
+                    - utc_instant
+                    - offset
+                    - ambiguity
+                    - candidates
+                    - is_weekend
+                    - is_holiday
+                    - holiday_name
+                    - is_working_day
+                    - is_within_working_hours
+                    - business_days_result
+                    - next_valid_working_instant
+                    - previous_valid_working_instant
+                    - next_transition
+                    - previous_transition
+                    - comparisons
+                    - overlap
+                    - coverage
+                    - tzdb
+                    properties:
+                      timezone:
+                        type: string
+                      utc_instant:
+                        type:
+                        - string
+                        - 'null'
+                      local_time:
+                        type:
+                        - string
+                        - 'null'
+                      offset:
+                        type:
+                        - string
+                        - 'null'
+                      abbreviation:
+                        type:
+                        - string
+                        - 'null'
+                      date:
+                        type:
+                        - string
+                        - 'null'
+                      ambiguity:
+                        type: string
+                        enum:
+                        - unique
+                        - ambiguous
+                        - nonexistent
+                      candidates:
+                        type: array
+                        description: Both readings when the local time is ambiguous or nonexistent.
+                        items:
+                          type: object
+                      is_weekend:
+                        type:
+                        - boolean
+                        - 'null'
+                      is_holiday:
+                        type:
+                        - boolean
+                        - 'null'
+                      holiday_name:
+                        type:
+                        - string
+                        - 'null'
+                      holiday:
+                        type:
+                        - object
+                        - 'null'
+                      is_working_day:
+                        type:
+                        - boolean
+                        - 'null'
+                      is_within_working_hours:
+                        type:
+                        - boolean
+                        - 'null'
+                      business_days_result:
+                        type:
+                        - object
+                        - 'null'
+                      next_valid_working_instant:
+                        type:
+                        - object
+                        - 'null'
+                      previous_valid_working_instant:
+                        type:
+                        - object
+                        - 'null'
+                      next_transition:
+                        type:
+                        - object
+                        - 'null'
+                      previous_transition:
+                        type:
+                        - object
+                        - 'null'
+                      comparisons:
+                        type: array
+                        items:
+                          type: object
+                      overlap:
+                        type: object
+                      coverage:
+                        type: object
+                        description: What the requested holiday calendar actually covers. Never implies more.
+                      tzdb:
+                        type: object
+              example:
+                ok: true
+                verdict: unknown
+                confidence: 1
+                risk_codes:
+                - AMBIGUOUS_LOCAL_TIME
+                - UNRESOLVED_UNDER_REJECT_POLICY
+                evidence:
+                - code: AMBIGUOUS_LOCAL_TIME
+                  severity: high
+                  detail: 'Local time 2026-11-01T01:30:00 occurs twice in America/New_York: the clock is set back 60 minutes at 2026-11-01T06:00:00Z (-04:00 to -05:00). Both instants are listed in candidates.'
+                  source: moment-timezone@2026c
+                  data:
+                    ambiguity: ambiguous
+                    policy: reject
+                    candidates:
+                    - utc_instant: '2026-11-01T05:30:00Z'
+                      offset: -04:00
+                      offset_minutes: -240
+                      abbreviation: EDT
+                      local_time: '2026-11-01T01:30:00'
+                      interpretation: earlier
+                    - utc_instant: '2026-11-01T06:30:00Z'
+                      offset: -05:00
+                      offset_minutes: -300
+                      abbreviation: EST
+                      local_time: '2026-11-01T01:30:00'
+                      interpretation: later
+                    transition:
+                      at_utc: '2026-11-01T06:00:00Z'
+                      kind: fold
+                      shift_minutes: -60
+                      offset_before: -04:00
+                      offset_after: -05:00
+                      offset_before_minutes: -240
+                      offset_after_minutes: -300
+                      abbreviation_before: EDT
+                      abbreviation_after: EST
+                      local_before: '2026-11-01T02:00:00'
+                      local_after: '2026-11-01T01:00:00'
+                - code: UNRESOLVED_UNDER_REJECT_POLICY
+                  severity: high
+                  detail: ambiguity_policy is "reject", so no single instant was chosen. Re-send with "earlier", "later" or "compatible" once you have decided which reading you mean, or pick one of the candidate instants directly.
+                  source: chronosure.policy
+                  data:
+                    policy: reject
+                - code: INSTANT_DEPENDENT_FIELDS_WITHHELD
+                  severity: info
+                  detail: utc_instant, comparisons, overlap, working-hour status and the next/previous working instants were not computed, because they all depend on choosing one of the candidate instants. Calendar facts for the requested date are still reported. Re-send with an explicit ambiguity_policy to get them.
+                  source: chronosure.policy
+                  data:
+                    policy: reject
+                result:
+                  timezone: America/New_York
+                  requested_local_time: '2026-11-01T01:30:00'
+                  requested_instant: null
+                  ambiguity: ambiguous
+                  ambiguity_policy: reject
+                  candidates:
+                  - utc_instant: '2026-11-01T05:30:00Z'
+                    offset: -04:00
+                    offset_minutes: -240
+                    abbreviation: EDT
+                    local_time: '2026-11-01T01:30:00'
+                    interpretation: earlier
+                  - utc_instant: '2026-11-01T06:30:00Z'
+                    offset: -05:00
+                    offset_minutes: -300
+                    abbreviation: EST
+                    local_time: '2026-11-01T01:30:00'
+                    interpretation: later
+                  utc_instant: null
+                  local_time: null
+                  offset: null
+                  offset_minutes: null
+                  abbreviation: null
+                  date: '2026-11-01'
+                  day_of_week: 7
+                  is_weekend: true
+                  is_holiday: false
+                  holiday_name: null
+                  holiday: null
+                  is_working_day: false
+                  is_within_working_hours: null
+                  working_hours:
+                    start: 09:00
+                    end: '17:00'
+                  business_days_result: null
+                  next_valid_working_instant: null
+                  previous_valid_working_instant: null
+                  next_transition:
+                    at_utc: '2027-03-14T07:00:00Z'
+                    kind: gap
+                    shift_minutes: 60
+                    offset_before: -05:00
+                    offset_after: -04:00
+                    offset_before_minutes: -300
+                    offset_after_minutes: -240
+                    abbreviation_before: EST
+                    abbreviation_after: EDT
+                    local_before: '2027-03-14T02:00:00'
+                    local_after: '2027-03-14T03:00:00'
+                  previous_transition:
+                    at_utc: '2026-11-01T06:00:00Z'
+                    kind: fold
+                    shift_minutes: -60
+                    offset_before: -04:00
+                    offset_after: -05:00
+                    offset_before_minutes: -240
+                    offset_after_minutes: -300
+                    abbreviation_before: EDT
+                    abbreviation_after: EST
+                    local_before: '2026-11-01T02:00:00'
+                    local_after: '2026-11-01T01:00:00'
+                  comparisons: []
+                  overlap:
+                    has_overlap: false
+                    working_hours:
+                      start: 09:00
+                      end: '17:00'
+                    working_hours_source: default
+                    zones:
+                    - America/New_York
+                    windows: []
+                    intersection: null
+                  coverage:
+                    calendar: null
+                    jurisdictions: []
+                    coverage_years: null
+                    weekend_days:
+                    - 6
+                    - 7
+                    date_in_coverage: true
+                    holiday_dataset_version: 2026.08.03
+                    available_calendars:
+                    - AU-NSW
+                    - CA-BC
+                    - CA-ON
+                    - DE
+                    - FR
+                    - GB-ENG
+                    - GB-NIR
+                    - GB-SCT
+                    - IE
+                    - IL
+                    - IN
+                    - JP
+                    - NL
+                    - NZ
+                    - US
+                    - US-CA
+                    - US-NY
+                    note: No holiday_calendar was requested. Weekends use the Saturday/Sunday default; no public holidays were applied. Pass holiday_calendar to get holiday-aware answers.
+                  tzdb:
+                    version: 2026c
+                    source: moment-timezone
+                    host_icu_tz_version: 2026c
+                    host_agrees: true
+                    temporal_source: polyfill
+                policy_version: 2026-08-03.1
+                request_hash: sha256:7d599c118b7226b7a9b05f014734be376d50d00133cdabae0b6530aa40064833
+                data_versions:
+                  tzdb: 2026c
+                  holidays: 2026.08.03
+                  temporal_source: polyfill
+                  tzdb_source: moment-timezone
+                  host_icu_tz: 2026c
+                warnings: []
+        '400':
+          description: INPUT_INVALID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '402':
+          headers:
+            WWW-Authenticate:
+              description: MPP tempo/charge challenge
+              schema:
+                type: string
+            PAYMENT-REQUIRED:
+              description: x402 payment challenge
+              schema:
+                type: string
+          description: 'Payment required. Choose x402 (PAYMENT-REQUIRED / PAYMENT-SIGNATURE) or MPP Tempo (WWW-Authenticate / Authorization: Payment).'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '409':
+          description: MPP challenge already used or processing. Do not authorize a duplicate payment.
+        '422':
+          description: UNSUPPORTED or INDETERMINATE. Not charged.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '429':
+          description: RATE_LIMITED
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '502':
+          description: Upstream or facilitator unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '503':
+          description: MPP settlement pending or uncertain. Reconcile the original transaction before paying again.
+        '504':
+          description: UPSTREAM_TIMEOUT
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+      tags:
+      - Business Time
+x-service-info:
+  categories:
+  - timezone
+  - business-days
+  - holidays
+  - dst
+  - scheduling
+  - working-hours
+  - iana-tzdb
+  - x402
+  - mpp
+  - tempo
+  - deterministic
+  - temporal
+  - calendar
+  docs:
+    homepage: https://chrono.schemasure.com
+    llms: https://chrono.schemasure.com/llms.txt
+    apiReference: https://chrono.schemasure.com/openapi.json
+x-provenance:
+  method: harvested
+  publisher: SchemaSure
+  source: https://chrono.schemasure.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

@@ -1,0 +1,54 @@
+openapi: 3.2.0
+info:
+  title: SchemaSure — structured extraction Health API
+  version: 0.2.0
+  summary: Turn messy text, HTML, or document images into guaranteed schema-valid JSON, or pay nothing. SchemaSure V2 is the primary production API.
+  description: 'Pay-per-call APIs that extract strict, JSON-Schema-valid typed JSON from unstructured text, HTML, or document images. Output is guaranteed to validate against the caller-supplied JSON Schema (Ajv, draft 2020-12) or the request returns a typed error and is not charged (charge-only-on-success). Both production services use x402 V2 with USDC on Base mainnet; the image service is always paid and has no V1 or free route. A legacy V1 text endpoint provides limited free evaluation calls. No signup, API keys, or account dashboard — built for autonomous AI agents.
+
+
+    Primary production endpoint: POST /v2/extract ($0.01/call, flat, failed calls free, always paid). Image production endpoint: POST /v2/extract-image ($0.03/image, flat, failed calls free, always paid, V2-only). Legacy POST /extract remains available for limited free evaluation and V1 compatibility.'
+  contact:
+    name: SchemaSure
+    url: https://schemasure.com
+servers:
+- url: https://schemasure.com
+tags:
+- name: Health
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Liveness/readiness probe
+      responses:
+        '200':
+          description: Service is up.
+      tags:
+      - Health
+externalDocs:
+  description: SchemaSure agent integration guide
+  url: https://schemasure.com/llms.txt
+x-payment:
+  protocol: x402
+  version: 2
+  primary: true
+  scheme: exact
+  network: eip155:8453
+  asset: USDC
+  assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+  priceUsd: 0.01
+  chargeModel: charge-only-on-success
+  alwaysPaid: true
+  resource: https://schemasure.com/v2/extract
+  resources:
+  - kind: text
+    resource: https://schemasure.com/v2/extract
+    priceUsd: 0.01
+  - kind: image
+    resource: https://schemasure.com/v2/extract-image
+    priceUsd: 0.03
+x-provenance:
+  method: harvested
+  publisher: SchemaSure
+  source: https://schemasure.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

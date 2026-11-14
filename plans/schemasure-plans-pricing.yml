@@ -2,6 +2,7 @@
 generated: '2026-10-28'
 method: searched
 source: https://schemasure.com/.well-known/pricing.json
+name: SchemaSure API Plans
 sources:
 - https://schemasure.com/.well-known/pricing.json
 provenance:
@@ -37,7 +38,7 @@ plans:
 rate_limit_statements:
 - '"freeCallsPerClient":3'
 x-canonical:
-  generated: '2026-11-06'
+  generated: '2026-11-13'
   vocabulary: engine/economics/plans-canonical.yml
   models:
   - subscription

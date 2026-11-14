@@ -1,0 +1,563 @@
+openapi: 3.2.0
+info:
+  title: AllowanceGuard Guard API
+  version: 0.1.0
+  summary: Deterministic pre-approval allowance checks for Base agents, paid per call.
+  description: 'AllowanceGuard answers one question before an agent signs an irreversible approve: should this spender get this allowance. It reads the allowance the spender already holds, classifies the one being requested against the token''s own supply rather than a list of sentinel values, and says whether signing raises or lowers exposure — so reducing an unlimited allowance is recognised as safer than the status quo instead of flagged as another approval. It checks whether the spender is a contract at all, whether its code can be swapped after the grant, and whether it is on the denylist. There is no model anywhere in it. When a fact cannot be read the answer is unknown, never a quiet allow.'
+  contact:
+    email: support@schemasure.com
+  x-policy-version: '2026-09-19'
+servers:
+- url: https://allowance.schemasure.com
+tags:
+- name: Guard
+paths:
+  /v1/guard/allowance:
+    post:
+      operationId: allowanceguard_v1_guard_allowance
+      summary: Decide whether to grant a token allowance before signing the approve
+      description: Decide whether to grant an ERC-20, NFT or Permit2 allowance before signing it. Send owner, token, spender and amount, or the unsigned approve, setApprovalForAll or Permit2 calldata. Returns allow, warn, block or unknown with the allowance already on chain, the requested scope and the rule behind it, whether this raises or lowers exposure, and whether the spender is a contract, upgradeable or denylisted. Returns unknown rather than guessing. Not a guarantee a spender is honest.
+      x-payment-info:
+        offers:
+        - method: tempo
+          intent: charge
+          amount: '30000'
+          currency: '0x20C000000000000000000000b9537d11c60E8b50'
+          recipient: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+          methodDetails:
+            chainId: 4217
+            supportedModes:
+            - pull
+        x402Version: 2
+        scheme: exact
+        network: eip155:8453
+        asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+        amountAtomic: '30000'
+        priceUsd: 0.03
+        payTo: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+        policy: charge only on a successful, usable result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: https://json-schema.org/draft/2020-12/schema
+              title: AllowanceGuardRequest
+              type: object
+              additionalProperties: false
+              description: Send exactly one of approval or calldata. Unrecognised fields are rejected rather than ignored, so a misspelled amount is an error and not a silently different question.
+              oneOf:
+              - required:
+                - approval
+              - required:
+                - calldata
+              properties:
+                approval:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - owner
+                  - token
+                  - spender
+                  - amount
+                  description: The grant you are about to make, described directly.
+                  properties:
+                    owner:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{40}$
+                      description: The account whose balance the spender would be able to move.
+                    token:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{40}$
+                      description: The token or NFT collection. For a Permit2 grant this is still the token.
+                    spender:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{40}$
+                    amount:
+                      type: string
+                      pattern: ^(?:[0-9]+|0x[0-9a-fA-F]+|all)$
+                      description: 'Base units, not a human amount: 1 USDC is "1000000". Use "all" only with kind approval_for_all, and "0" to revoke.'
+                      examples:
+                      - '1000000'
+                      - all
+                      - '0'
+                    kind:
+                      type: string
+                      enum:
+                      - erc20
+                      - increase
+                      - decrease
+                      - approval_for_all
+                      - permit2
+                      - eip2612
+                      default: erc20
+                      description: increase and decrease are relative to the allowance already on chain, so their direction is known even when that allowance cannot be read.
+                    expiration:
+                      type: string
+                      description: 'Unix seconds. Permit2 only: a plain ERC-20 allowance never expires, so declaring one on any other kind is rejected.'
+                calldata:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - from
+                  - to
+                  - data
+                  description: The unsigned call you are about to sign. Decodes 7 approval functions.
+                  properties:
+                    from:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{40}$
+                    to:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{40}$
+                      description: The token, or Permit2 (0x000000000022D473030F116dDEE9F6B43aC78BA3) for a Permit2 grant.
+                    data:
+                      type: string
+                      pattern: ^0x[0-9a-fA-F]{8,}$
+                      description: approve, increaseAllowance, decreaseAllowance, setApprovalForAll, an EIP-2612 permit, or either Permit2 form. Anything else is rejected as UNSUPPORTED and not charged.
+            example:
+              calldata:
+                from: '0x9F2C5E4A8db1C3a7E6B0d4f8C1E2a5b7D9C0e3F4'
+                to: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                data: '0x095ea7b30000000000000000000000002626664c2603336e57b271c5c0b26f421741e4810000000000000000000000000000000000000000000000000000000000000000'
+      responses:
+        '200':
+          description: Successful result envelope
+          headers:
+            Payment-Receipt:
+              description: MPP Tempo settlement receipt
+              schema:
+                type: string
+            PAYMENT-RESPONSE:
+              description: x402 settlement receipt
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $schema: https://json-schema.org/draft/2020-12/schema
+                title: AllowanceGuardEnvelope
+                type: object
+                required:
+                - ok
+                - verdict
+                - confidence
+                - risk_codes
+                - evidence
+                - result
+                - policy_version
+                - request_hash
+                - data_versions
+                - warnings
+                properties:
+                  ok:
+                    type: boolean
+                  verdict:
+                    type: string
+                    enum:
+                    - allow
+                    - warn
+                    - block
+                    - unknown
+                    description: 'Precedence: block, then unknown, then warn, then allow. unknown is a real answer and is never a safe one.'
+                  confidence:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  risk_codes:
+                    type: array
+                    items:
+                      type: string
+                  evidence:
+                    type: array
+                    items:
+                      type: object
+                  policy_version:
+                    type: string
+                  request_hash:
+                    type: string
+                    pattern: ^sha256:[0-9a-f]{64}$
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  data_versions:
+                    type: object
+                    required:
+                    - denylist
+                    - abi_packs
+                    - signature_index
+                    - policy
+                    - chain
+                  result:
+                    type: object
+                    required:
+                    - input_shape
+                    - chain
+                    - request
+                    - decode
+                    - classification
+                    - current
+                    - delta
+                    - approval
+                    - spender
+                    - token
+                    - denylist_hits
+                    - unresolved
+                    - rpc
+                    properties:
+                      input_shape:
+                        type: string
+                        enum:
+                        - approval
+                        - calldata
+                      classification:
+                        type: object
+                        required:
+                        - scope
+                        - subject
+                        - basis
+                        - supply_checked
+                        - resulting_allowance
+                        properties:
+                          scope:
+                            type: string
+                            enum:
+                            - infinite
+                            - effectively_infinite
+                            - bounded
+                          subject:
+                            type: string
+                            enum:
+                            - resulting_allowance
+                            - requested_amount
+                          basis:
+                            type: string
+                            description: Names the rule that produced scope.
+                      current:
+                        type: object
+                        required:
+                        - amount
+                        - source
+                        - detail
+                        properties:
+                          amount:
+                            type:
+                            - string
+                            - 'null'
+                            description: null means it could not be read, which is never treated as zero.
+                          source:
+                            type: string
+                            enum:
+                            - erc20_allowance
+                            - permit2_allowance
+                            - is_approved_for_all
+                            - unreadable
+                            - not_applicable
+                      delta:
+                        type: object
+                        required:
+                        - direction
+                        - increases_exposure
+                        - detail
+                        properties:
+                          direction:
+                            type: string
+                            enum:
+                            - increase
+                            - decrease
+                            - unchanged
+                            - unknown
+                          increases_exposure:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: false means signing cannot leave the spender able to move more than it already can. Answerable even when direction is unknown.
+                      approval:
+                        type: object
+                        properties:
+                          scope:
+                            type: string
+                            enum:
+                            - infinite
+                            - effectively_infinite
+                            - bounded
+                      unresolved:
+                        type: array
+                        items:
+                          type: string
+                        description: Never empty when the verdict is unknown.
+              example:
+                ok: true
+                verdict: allow
+                confidence: 1
+                risk_codes: []
+                evidence:
+                - code: CURRENT_ALLOWANCE_UNREADABLE
+                  severity: info
+                  detail: 'The allowance 0x2626664c2603336E57B271c5C0b26F421741e481 already holds could not be read: no RPC endpoint is configured, so the allowance this spender already holds could not be read. Whether this request adds to an existing allowance or replaces one is therefore unknown. It does not change the answer: this request cannot increase what the spender can move.'
+                  source: rpc
+                - code: SPENDER_CODE_UNREADABLE
+                  severity: info
+                  detail: 'Whether 0x2626664c2603336E57B271c5C0b26F421741e481 is a contract or an account could not be determined: no RPC endpoint is configured, so it is unknown whether the spender has code. It does not change the answer: this request cannot increase what the spender can move.'
+                  source: rpc
+                - code: SPENDER_PROXY_OPAQUE
+                  severity: info
+                  detail: 'The code that would execute on 0x2626664c2603336E57B271c5C0b26F421741e481''s behalf could not be resolved: no RPC endpoint is configured, so no slot could be read. An allowance to a contract whose executing code is unknown is an allowance to unknown code. It does not change the answer: this request cannot increase what the spender can move.'
+                  source: rpc
+                result:
+                  input_shape: calldata
+                  chain: eip155:8453
+                  request:
+                    kind: erc20_approve
+                    mode: absolute
+                    owner: '0x9f2C5E4a8DB1C3A7e6b0d4f8C1e2A5b7d9c0E3f4'
+                    token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                    spender: '0x2626664c2603336E57B271c5C0b26F421741e481'
+                    amount: '0'
+                    expiration: null
+                    deadline: null
+                    token_id: null
+                    target: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                    summary: Revoke 0x2626664c2603336E57B271c5C0b26F421741e481's allowance on token 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 by setting it to zero.
+                  decode:
+                    selector: '0x095ea7b3'
+                    signature: approve(address,uint256)
+                    source: bundled-abi
+                    trace:
+                    - 'verified-abi: no candidate'
+                    - 'bundled-abi: resolved to approve(address,uint256)'
+                    candidates: []
+                  classification:
+                    scope: bounded
+                    subject: resulting_allowance
+                    basis: the allowance is zero, which is bounded without reference to the token's supply
+                    supply_checked: true
+                    total_supply: null
+                    resulting_allowance: '0'
+                  current:
+                    amount: null
+                    source: unreadable
+                    expiration: null
+                    detail: no RPC endpoint is configured, so the allowance this spender already holds could not be read
+                  delta:
+                    direction: unknown
+                    increases_exposure: false
+                    difference: null
+                    detail: this sets the allowance to zero, which cannot increase exposure whatever it is now; the value being replaced could not be read, so whether it is a reduction or already zero is unknown
+                  approval:
+                    token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                    owner: '0x9f2C5E4a8DB1C3A7e6b0d4f8C1e2A5b7d9c0E3f4'
+                    spender: '0x2626664c2603336E57B271c5C0b26F421741e481'
+                    amount: '0'
+                    scope: bounded
+                    basis: the allowance is zero, which is bounded without reference to the token's supply
+                    spender_is_contract: null
+                    total_supply: null
+                    expiration: null
+                  spender:
+                    address: '0x2626664c2603336E57B271c5C0b26F421741e481'
+                    is_contract: null
+                    detail: no RPC endpoint is configured, so it is unknown whether the spender has code
+                    proxy:
+                      address: '0x2626664c2603336E57B271c5C0b26F421741e481'
+                      kind: unknown
+                      implementation: null
+                      admin: null
+                      beacon: null
+                      upgradeable: null
+                      slots_probed: []
+                      detail: no RPC endpoint is configured, so no slot could be read
+                  token:
+                    address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                    has_code: null
+                    code_size: null
+                    symbol: null
+                    decimals: null
+                    total_supply: null
+                    is_erc721: null
+                    detail: no RPC configured, so code presence could not be read; no RPC configured, so token metadata could not be read
+                  denylist_hits: []
+                  unresolved:
+                  - 'The allowance 0x2626664c2603336E57B271c5C0b26F421741e481 already holds could not be read: no RPC endpoint is configured, so the allowance this spender already holds could not be read. Whether this request adds to an existing allowance or replaces one is therefore unknown.'
+                  - 'Whether 0x2626664c2603336E57B271c5C0b26F421741e481 is a contract or an account could not be determined: no RPC endpoint is configured, so it is unknown whether the spender has code.'
+                  - 'The code that would execute on 0x2626664c2603336E57B271c5C0b26F421741e481''s behalf could not be resolved: no RPC endpoint is configured, so no slot could be read. An allowance to a contract whose executing code is unknown is an allowance to unknown code.'
+                  rpc:
+                    configured: false
+                    reachable: null
+                    endpoints: []
+                policy_version: '2026-09-19'
+                request_hash: sha256:a88cb1eea90d411505068349493a5cf35a1f2b46f4cbb4185330ffd4094c65fb
+                data_versions:
+                  denylist: 2026-08-03.1
+                  abi_packs: 2026-08-03.1
+                  signature_index: 2026-08-03.1
+                  policy: '2026-09-19'
+                  chain: eip155:8453
+                  allowance_sentinels: '4'
+                warnings: []
+        '400':
+          description: INPUT_INVALID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '402':
+          headers:
+            WWW-Authenticate:
+              description: MPP tempo/charge challenge
+              schema:
+                type: string
+            PAYMENT-REQUIRED:
+              description: x402 payment challenge
+              schema:
+                type: string
+          description: 'Payment required. Choose x402 (PAYMENT-REQUIRED / PAYMENT-SIGNATURE) or MPP Tempo (WWW-Authenticate / Authorization: Payment).'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '409':
+          description: MPP challenge already used or processing. Do not authorize a duplicate payment.
+        '422':
+          description: UNSUPPORTED or INDETERMINATE. Not charged.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '429':
+          description: RATE_LIMITED
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '502':
+          description: Upstream or facilitator unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '503':
+          description: MPP settlement pending or uncertain. Reconcile the original transaction before paying again.
+        '504':
+          description: UPSTREAM_TIMEOUT
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+      tags:
+      - Guard
+x-service-info:
+  categories:
+  - allowance
+  - approve
+  - revoke
+  - erc20
+  - permit2
+  - base
+  - x402
+  - mpp
+  - tempo
+  - agent-safety
+  - wallet-safety
+  - deterministic
+  docs:
+    homepage: https://allowance.schemasure.com
+    llms: https://allowance.schemasure.com/llms.txt
+    apiReference: https://allowance.schemasure.com/openapi.json
+x-provenance:
+  method: harvested
+  publisher: SchemaSure
+  source: https://allowance.schemasure.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

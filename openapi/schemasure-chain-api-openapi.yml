@@ -1,0 +1,493 @@
+openapi: 3.2.0
+info:
+  title: ChainState Chain API
+  version: 0.1.0
+  summary: 'One-call Base address profile for agents: code, proxy, interfaces, token, balances, denylist.'
+  description: 'ChainState answers everything an agent needs to know about a Base address before interacting with it, in one paid call rather than four to six a-la-carte lookups. It reports whether the address holds code and how much, resolves proxies across all seven known slot layouts — including the legacy OpenZeppelin slot that Base USDC really uses, which an EIP-1967-only detector misses entirely — and returns the implementation behind the indirection, ERC-165 interface support, behavioural ERC-20 detection, token metadata, and the balances you asked for. There is no model anywhere in it. A contract that does not answer supportsInterface is reported as null, never false, and there is deliberately no reverse-name field: a name the subject can set for itself, published without a forward check, would be the one spoofable value in the response.'
+  contact:
+    email: support@schemasure.com
+  x-policy-version: '2026-09-19'
+servers:
+- url: https://chainstate.schemasure.com
+tags:
+- name: Chain
+paths:
+  /v1/chain/state:
+    post:
+      operationId: chainstate_v1_chain_state
+      summary: 'Profile a Base address: code, proxy, interfaces, token metadata, balances…'
+      description: Profile a Base address in one call instead of four to six lookups. Returns contract or externally owned plus code size, proxy detection across all seven slot layouts including the legacy OpenZeppelin slot Base USDC uses, the resolved implementation, ERC-165 and behavioural ERC-20 detection, token metadata, requested ERC-20 balances, and denylist hits. Answers unknown rather than guessing, and null rather than false when a contract stays silent. Not a guarantee that an address is safe.
+      x-payment-info:
+        offers:
+        - method: tempo
+          intent: charge
+          amount: '20000'
+          currency: '0x20C000000000000000000000b9537d11c60E8b50'
+          recipient: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+          methodDetails:
+            chainId: 4217
+            supportedModes:
+            - pull
+        x402Version: 2
+        scheme: exact
+        network: eip155:8453
+        asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+        amountAtomic: '20000'
+        priceUsd: 0.02
+        payTo: '0x9876af0F6D8Ed5155Cd02d1ca56D128601612690'
+        policy: charge only on a successful, usable result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: https://json-schema.org/draft/2020-12/schema
+              title: ChainStateRequest
+              type: object
+              additionalProperties: false
+              required:
+              - address
+              properties:
+                address:
+                  type: string
+                  pattern: ^0x[0-9a-fA-F]{40}$
+                  description: The Base address to profile. Case-insensitive; normalised to EIP-55.
+                tokens:
+                  type: array
+                  maxItems: 10
+                  items:
+                    type: string
+                    pattern: ^0x[0-9a-fA-F]{40}$
+                  description: ERC-20 contracts to read balanceOf(address) on for the subject. Amounts come back in base units with the token's decimals, or null with a reason.
+                selector:
+                  type: string
+                  pattern: ^0x[0-9a-fA-F]{8}$
+                  description: Only used for EIP-2535 diamonds, which have no single implementation and resolve their executing code per selector. Ignored for every other proxy kind.
+            example:
+              address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+      responses:
+        '200':
+          description: Successful result envelope
+          headers:
+            Payment-Receipt:
+              description: MPP Tempo settlement receipt
+              schema:
+                type: string
+            PAYMENT-RESPONSE:
+              description: x402 settlement receipt
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $schema: https://json-schema.org/draft/2020-12/schema
+                title: ChainStateEnvelope
+                type: object
+                required:
+                - ok
+                - verdict
+                - confidence
+                - risk_codes
+                - evidence
+                - result
+                - policy_version
+                - request_hash
+                - data_versions
+                - warnings
+                properties:
+                  ok:
+                    type: boolean
+                  verdict:
+                    type: string
+                    enum:
+                    - allow
+                    - warn
+                    - block
+                    - unknown
+                    description: 'Precedence: block, then unknown, then warn, then allow.'
+                  confidence:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  risk_codes:
+                    type: array
+                    items:
+                      type: string
+                  evidence:
+                    type: array
+                    items:
+                      type: object
+                  policy_version:
+                    type: string
+                  request_hash:
+                    type: string
+                    pattern: ^sha256:[0-9a-f]{64}$
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  data_versions:
+                    type: object
+                    required:
+                    - denylist
+                    - abi_packs
+                    - proxy_slots
+                    - policy
+                    - chain
+                  result:
+                    type: object
+                    required:
+                    - address
+                    - chain
+                    - account
+                    - proxy
+                    - interfaces
+                    - token
+                    - balances
+                    - denylist_hits
+                    - unresolved
+                    - rpc
+                    properties:
+                      account:
+                        type: object
+                        required:
+                        - is_contract
+                        - code_size
+                        - detail
+                        properties:
+                          is_contract:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                          code_size:
+                            type:
+                            - integer
+                            - 'null'
+                      proxy:
+                        type: object
+                        required:
+                        - kind
+                        - implementation
+                        - upgradeable
+                        - slots_probed
+                        - detail
+                        properties:
+                          kind:
+                            type: string
+                            enum:
+                            - none
+                            - eip1167
+                            - eip1967
+                            - eip1967-beacon
+                            - eip1822
+                            - zeppelinos
+                            - diamond
+                            - unknown
+                          upgradeable:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                      interfaces:
+                        type: object
+                        required:
+                        - erc165
+                        - erc721
+                        - erc1155
+                        - erc20
+                        - detail
+                        properties:
+                          erc165:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                          erc721:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                          erc1155:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                          erc20:
+                            type:
+                            - boolean
+                            - 'null'
+                            description: null means the contract did not answer. It never means 'does not support'.
+                      token:
+                        type:
+                        - object
+                        - 'null'
+                      balances:
+                        type: array
+                        items:
+                          type: object
+                      unresolved:
+                        type: array
+                        items:
+                          type: string
+              example:
+                ok: true
+                verdict: warn
+                confidence: 1
+                risk_codes:
+                - PROXY_UPGRADEABLE
+                evidence:
+                - code: INTERFACE_PROBE_UNANSWERED
+                  severity: info
+                  detail: 'This contract did not answer supportsInterface, so ERC-721 and ERC-1155 support is reported as null. That is not evidence against them: plenty of live contracts predate ERC-165 entirely.'
+                  source: erc165
+                - code: PROXY_UPGRADEABLE
+                  severity: medium
+                  detail: This is an upgradeable zeppelinos proxy. Everything reported here describes the implementation deployed right now; the admin can point it elsewhere before your next call lands, so this is a risk signal rather than metadata.
+                  source: proxy-slots
+                  data:
+                    kind: zeppelinos
+                    implementation: '0x2Ce6311ddAE708829bc0784C967b7d77D19FD779'
+                    admin: '0x4fc7850364958d97B4d3f5A08f79db2493f8cA44'
+                result:
+                  address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                  chain: eip155:8453
+                  account:
+                    is_contract: true
+                    code_size: 1852
+                    detail: 1852 bytes of runtime code
+                  proxy:
+                    address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                    kind: zeppelinos
+                    implementation: '0x2Ce6311ddAE708829bc0784C967b7d77D19FD779'
+                    admin: '0x4fc7850364958d97B4d3f5A08f79db2493f8cA44'
+                    beacon: null
+                    upgradeable: true
+                    slots_probed:
+                    - slot: '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'
+                      label: eip1967.implementation
+                      value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+                      address: null
+                    - slot: '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103'
+                      label: eip1967.admin
+                      value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+                      address: null
+                    - slot: '0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50'
+                      label: eip1967.beacon
+                      value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+                      address: null
+                    - slot: '0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7'
+                      label: eip1822.uups
+                      value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+                      address: null
+                    - slot: '0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3'
+                      label: zeppelinos.implementation
+                      value: '0x0000000000000000000000002ce6311ddae708829bc0784c967b7d77d19fd779'
+                      address: '0x2Ce6311ddAE708829bc0784C967b7d77D19FD779'
+                    - slot: '0x10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b'
+                      label: zeppelinos.admin
+                      value: '0x0000000000000000000000004fc7850364958d97b4d3f5a08f79db2493f8ca44'
+                      address: '0x4fc7850364958d97B4d3f5A08f79db2493f8cA44'
+                    - slot: '0xc8fcad8db84d3cc18b4c41d551ea0ee66dd599cde068d998e57d5e09332c131c'
+                      label: eip2535.diamond
+                      value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+                      address: null
+                    detail: resolved through the legacy zeppelinos slot; the EIP-1967 slot is empty on this contract, which is the case for Base USDC
+                  interfaces:
+                    erc165: null
+                    erc721: null
+                    erc1155: null
+                    erc20: true
+                    detail: supportsInterface did not answer, so ERC-721 and ERC-1155 are reported as unknown rather than absent; ERC-20 is confirmed behaviourally from totalSupply, decimals, and balanceOf
+                  token:
+                    symbol: USDC
+                    decimals: 6
+                    total_supply: '4305008625389354'
+                    detail: symbol, decimals, and totalSupply read from the token
+                  balances: []
+                  denylist_hits: []
+                  unresolved:
+                  - 'ERC-165 interface support: supportsInterface did not answer'
+                  rpc:
+                    configured: true
+                    reachable: true
+                    endpoints:
+                    - url: https://mainnet.base.org
+                      latest: true
+                      archive: true
+                      simulate: true
+                policy_version: '2026-09-19'
+                request_hash: sha256:96b41fa639c553a6dc6bfaa1d8ccc056912abc36e8bbde3d65f3e1edc2bd147f
+                data_versions:
+                  denylist: 2026-08-03.1
+                  abi_packs: 2026-08-03.1
+                  proxy_slots: '7'
+                  policy: '2026-09-19'
+                  chain: eip155:8453
+                warnings: []
+        '400':
+          description: INPUT_INVALID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '402':
+          headers:
+            WWW-Authenticate:
+              description: MPP tempo/charge challenge
+              schema:
+                type: string
+            PAYMENT-REQUIRED:
+              description: x402 payment challenge
+              schema:
+                type: string
+          description: 'Payment required. Choose x402 (PAYMENT-REQUIRED / PAYMENT-SIGNATURE) or MPP Tempo (WWW-Authenticate / Authorization: Payment).'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '409':
+          description: MPP challenge already used or processing. Do not authorize a duplicate payment.
+        '422':
+          description: UNSUPPORTED or INDETERMINATE. Not charged.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '429':
+          description: RATE_LIMITED
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '502':
+          description: Upstream or facilitator unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+        '503':
+          description: MPP settlement pending or uncertain. Reconcile the original transaction before paying again.
+        '504':
+          description: UPSTREAM_TIMEOUT
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                additionalProperties: false
+                properties:
+                  error:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+      tags:
+      - Chain
+x-service-info:
+  categories:
+  - base
+  - address
+  - proxy
+  - erc20
+  - erc165
+  - token-metadata
+  - balances
+  - denylist
+  - agent-safety
+  - x402
+  - mpp
+  - tempo
+  - deterministic
+  docs:
+    homepage: https://chainstate.schemasure.com
+    llms: https://chainstate.schemasure.com/llms.txt
+    apiReference: https://chainstate.schemasure.com/openapi.json
+x-provenance:
+  method: harvested
+  publisher: SchemaSure
+  source: https://chainstate.schemasure.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
